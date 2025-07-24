@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Tienda de Ropa</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 2em; }
+    h1 { color: #2c3e50; }
+    ul { list-style: none; padding: 0; }
+    li { margin-bottom: 1em; }
+    button { margin-left: 1em; }
+    form { margin-bottom: 2em; }
+    input[type="text"], input[type="number"] { margin-right: 1em; }
+  </style>
+</head>
+<body>
+  <h1>Tienda de Ropa</h1>
+  <form id="addForm">
+    <input type="text" id="nombre" placeholder="Nombre" required>
+    <input type="number" id="precio" placeholder="Precio" required>
+    <button type="submit">Agregar producto</button>
+  </form>
+  <ul id="items"></ul>
+
+  <script>
+    const itemsList = document.getElementById('items');
+    const addForm = document.getElementById('addForm');
+    const nombreInput = document.getElementById('nombre');
+    const precioInput = document.getElementById('precio');
+
+    function fetchItems() {
+      fetch('/api/items')
+        .then(res => res.json())
+        .then(data => {
+          itemsList.innerHTML = '';
+          data.forEach(item => {
+            const li = document.createElement('li');
+            li.innerHTML = `
+              <strong>${item.nombre}</strong> - $${item.precio}
+              <button onclick="editItem(${item.id}, '${item.nombre}', ${item.precio})">Editar</button>
+              <button onclick="deleteItem(${item.id})">Eliminar</button>
+            `;
+            itemsList.appendChild(li);
+          });
+        });
+    }
+
+    addForm.onsubmit = function(e) {
+      e.preventDefault();
+      fetch('/api/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          nombre: nombreInput.value,
+          precio: parseFloat(precioInput.value)
+        })
+      }).then(() => {
+        nombreInput.value = '';
+        precioInput.value = '';
+        fetchItems();
+      });
+    };
+
+    window.deleteItem = function(id) {
+      fetch(`/api/items/${id}`, { method: 'DELETE' })
+        .then(() => fetchItems());
+    };
+
+    window.editItem = function(id, nombre, precio) {
+      const newNombre = prompt('Nuevo nombre:', nombre);
+      const newPrecio = prompt('Nuevo precio:', precio);
+      if (newNombre && newPrecio) {
+        fetch(`/api/items/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            nombre: newNombre,
+            precio: parseFloat(newPrecio)
+          })
+        }).then(() => fetchItems());
+      }
+    };
+
+    fetchItems();
+  </script>
+</body>
+</html>
