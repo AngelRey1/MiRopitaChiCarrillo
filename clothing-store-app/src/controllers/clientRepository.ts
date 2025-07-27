@@ -1,35 +1,45 @@
-import { Pool } from 'pg';
+import mysql from 'mysql2/promise';
 
-const pool = new Pool({
-  user: 'postgres',
+const pool = mysql.createPool({
   host: 'localhost',
-  database: 'MiRopitaChiCarrillo',
-  password: 'PerlaBlanca$700',
-  port: 5432,
+  user: 'root',
+  password: 'J4flores24',
+  database: 'myropitacarrillochi',
+  port: 3306,
 });
 
 export async function getAllClients() {
-  const res = await pool.query('SELECT * FROM cliente');
-  return res.rows;
+  const [rows] = await pool.query('SELECT * FROM cliente');
+  return rows;
 }
 
 export async function createClient(client: { nombres: string; apellidos: string }) {
-  const res = await pool.query(
-    'INSERT INTO cliente (nombres, apellidos) VALUES ($1, $2) RETURNING *',
+  const [result] = await pool.query(
+    'INSERT INTO cliente (nombres, apellidos) VALUES (?, ?)',
     [client.nombres, client.apellidos]
   );
-  return res.rows[0];
+  
+  // Obtener el cliente recién creado
+  const [rows] = await pool.query('SELECT * FROM cliente WHERE id_cliente = ?', [(result as any).insertId]);
+  return (rows as any[])[0];
 }
 
 export async function updateClient(id_cliente: number, client: { nombres: string; apellidos: string }) {
-  const res = await pool.query(
-    'UPDATE cliente SET nombres = $2, apellidos = $3 WHERE id_cliente = $1 RETURNING *',
-    [id_cliente, client.nombres, client.apellidos]
+  await pool.query(
+    'UPDATE cliente SET nombres = ?, apellidos = ? WHERE id_cliente = ?',
+    [client.nombres, client.apellidos, id_cliente]
   );
-  return res.rows[0];
+  
+  // Obtener el cliente actualizado
+  const [rows] = await pool.query('SELECT * FROM cliente WHERE id_cliente = ?', [id_cliente]);
+  return (rows as any[])[0];
 }
 
 export async function deleteClient(id_cliente: number) {
-  const res = await pool.query('DELETE FROM cliente WHERE id_cliente = $1 RETURNING *', [id_cliente]);
-  return res.rows[0];
+  const [rows] = await pool.query('SELECT * FROM cliente WHERE id_cliente = ?', [id_cliente]);
+  if ((rows as any[]).length > 0) {
+    await pool.query('DELETE FROM cliente WHERE id_cliente = ?', [id_cliente]);
+    return (rows as any[])[0];
+  }
+  return null;
 } 

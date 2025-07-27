@@ -1,88 +1,94 @@
-import { Pool } from 'pg';
+import mysql from 'mysql2/promise';
 
-const pool = new Pool({
-  user: 'postgres',
+const pool = mysql.createPool({
   host: 'localhost',
-  database: 'MiRopitaChiCarrillo',
-  password: 'PerlaBlanca$700', // tu contraseña real
-  port: 5432,
+  user: 'root',
+  password: 'J4flores24',
+  database: 'myropitacarrillochi',
+  port: 3306,
 });
 
 export async function getAllProducts() {
-  const res = await pool.query('SELECT * FROM producto');
-  return res.rows;
+  const [rows] = await pool.query('SELECT * FROM producto');
+  return rows;
 }
 
 export async function getProductById(id_producto: number) {
-  const res = await pool.query('SELECT * FROM producto WHERE id_producto = $1', [id_producto]);
-  return res.rows[0];
+  const [rows] = await pool.query('SELECT * FROM producto WHERE id_producto = ?', [id_producto]);
+  return (rows as any[])[0];
 }
 
 export async function createProduct(producto: {
   nombre: string;
-  descripcion: string;
+  modelo: string;
   talla: string;
-  color: string;
-  costo_adquisicion: number;
-  precio_venta: number;
-  stock: number;
-  id_proveedor: number;
+  corte: string;
+  existencia: number;
+  precio: number;
+  en_promocion?: boolean;
 }) {
-  const res = await pool.query(
-    `INSERT INTO producto (nombre, descripcion, talla, color, costo_adquisicion, precio_venta, stock, id_proveedor)
-     VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
+  const [result] = await pool.query(
+    `INSERT INTO producto (nombre, modelo, talla, corte, existencia, precio, en_promocion)
+     VALUES (?, ?, ?, ?, ?, ?, ?)`,
     [
       producto.nombre,
-      producto.descripcion,
+      producto.modelo,
       producto.talla,
-      producto.color,
-      producto.costo_adquisicion,
-      producto.precio_venta,
-      producto.stock,
-      producto.id_proveedor
+      producto.corte,
+      producto.existencia,
+      producto.precio,
+      producto.en_promocion || false
     ]
   );
-  return res.rows[0];
+  
+  // Obtener el producto recién creado
+  const [rows] = await pool.query('SELECT * FROM producto WHERE id_producto = ?', [(result as any).insertId]);
+  return (rows as any[])[0];
 }
 
 export async function updateProduct(id_producto: number, producto: {
   nombre: string;
-  descripcion: string;
+  modelo: string;
   talla: string;
-  color: string;
-  costo_adquisicion: number;
-  precio_venta: number;
-  stock: number;
-  id_proveedor: number;
+  corte: string;
+  existencia: number;
+  precio: number;
+  en_promocion?: boolean;
 }) {
-  const res = await pool.query(
-    `UPDATE producto SET nombre = $2, descripcion = $3, talla = $4, color = $5, costo_adquisicion = $6, precio_venta = $7, stock = $8, id_proveedor = $9
-     WHERE id_producto = $1 RETURNING *`,
+  await pool.query(
+    `UPDATE producto SET nombre = ?, modelo = ?, talla = ?, corte = ?, existencia = ?, precio = ?, en_promocion = ?
+     WHERE id_producto = ?`,
     [
-      id_producto,
       producto.nombre,
-      producto.descripcion,
+      producto.modelo,
       producto.talla,
-      producto.color,
-      producto.costo_adquisicion,
-      producto.precio_venta,
-      producto.stock,
-      producto.id_proveedor
+      producto.corte,
+      producto.existencia,
+      producto.precio,
+      producto.en_promocion || false,
+      id_producto
     ]
   );
-  return res.rows[0];
+  
+  // Obtener el producto actualizado
+  const [rows] = await pool.query('SELECT * FROM producto WHERE id_producto = ?', [id_producto]);
+  return (rows as any[])[0];
 }
 
 export async function deleteProduct(id_producto: number) {
-  const res = await pool.query('DELETE FROM producto WHERE id_producto = $1 RETURNING *', [id_producto]);
-  return res.rows[0];
+  const [rows] = await pool.query('SELECT * FROM producto WHERE id_producto = ?', [id_producto]);
+  if ((rows as any[]).length > 0) {
+    await pool.query('DELETE FROM producto WHERE id_producto = ?', [id_producto]);
+    return (rows as any[])[0];
+  }
+  return null;
 }
 
 export async function testConnection() {
   try {
-    const res = await pool.query('SELECT 1');
-    console.log('Conexión exitosa a PostgreSQL:', res.rows);
+    const [rows] = await pool.query('SELECT 1 as test');
+    console.log('Conexión exitosa a MySQL:', rows);
   } catch (error) {
-    console.error('Error al conectar a PostgreSQL:', error);
+    console.error('Error al conectar a MySQL:', error);
   }
 }

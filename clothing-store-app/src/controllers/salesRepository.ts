@@ -1,49 +1,49 @@
-import { Pool } from 'pg';
+import mysql from 'mysql2/promise';
 
-const pool = new Pool({
-  user: 'postgres',
+const pool = mysql.createPool({
   host: 'localhost',
-  database: 'MiRopitaChiCarrillo',
-  password: 'PerlaBlanca$700', // tu contraseña real
-  port: 5432,
+  user: 'root',
+  password: 'J4flores24',
+  database: 'myropitacarrillochi',
+  port: 3306,
 });
 
 export async function crearVenta({ id_cliente, productos }: { id_cliente?: number, productos: Array<{ id_producto: number, cantidad: number, precio_en_venta: number }> }) {
-  const client = await pool.connect();
+  const connection = await pool.getConnection();
   try {
-    await client.query('BEGIN');
-    const ventaRes = await client.query(
-      'INSERT INTO venta (fecha_venta, id_cliente) VALUES (NOW(), $1) RETURNING id_venta',
+    await connection.beginTransaction();
+    const [ventaRes] = await connection.query(
+      'INSERT INTO venta (fecha_venta, id_cliente) VALUES (NOW(), ?)',
       [id_cliente || null]
     );
-    const id_venta = ventaRes.rows[0].id_venta;
+    const id_venta = (ventaRes as any).insertId;
     for (const prod of productos) {
-      await client.query(
-        'INSERT INTO detalle_venta (id_venta, id_producto, cantidad, precio_en_venta) VALUES ($1, $2, $3, $4)',
+      await connection.query(
+        'INSERT INTO detalle_venta (id_venta, id_producto, cantidad, precio_en_venta) VALUES (?, ?, ?, ?)',
         [id_venta, prod.id_producto, prod.cantidad, prod.precio_en_venta]
       );
-      await client.query(
-        'UPDATE producto SET stock = stock - $1 WHERE id_producto = $2',
+      await connection.query(
+        'UPDATE producto SET existencia = existencia - ? WHERE id_producto = ?',
         [prod.cantidad, prod.id_producto]
       );
     }
-    await client.query('COMMIT');
+    await connection.commit();
     return { id_venta };
   } catch (err) {
-    await client.query('ROLLBACK');
+    await connection.rollback();
     throw err;
   } finally {
-    client.release();
+    connection.release();
   }
 }
 
 export async function getVentas() {
-  const res = await pool.query('SELECT * FROM venta ORDER BY fecha_venta DESC');
-  return res.rows;
+  const [rows] = await pool.query('SELECT * FROM venta ORDER BY fecha_venta DESC');
+  return rows;
 }
 
 export async function getVentaById(id_venta: number) {
-  const ventaRes = await pool.query('SELECT * FROM venta WHERE id_venta = $1', [id_venta]);
-  const detallesRes = await pool.query('SELECT * FROM detalle_venta WHERE id_venta = $1', [id_venta]);
-  return { ...ventaRes.rows[0], detalles: detallesRes.rows };
+  const [ventaRows] = await pool.query('SELECT * FROM venta WHERE id_venta = ?', [id_venta]);
+  const [detallesRows] = await pool.query('SELECT * FROM detalle_venta WHERE id_venta = ?', [id_venta]);
+  return { ...(ventaRows as any[])[0], detalles: detallesRows };
 } 

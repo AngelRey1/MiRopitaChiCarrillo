@@ -2,86 +2,1372 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Tienda de Ropa</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MiRopitaChiCarrillo - Tienda de Ropa</title>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
   <style>
-    body { font-family: Arial, sans-serif; margin: 2em; }
-    h1 { color: #2c3e50; }
-    ul { list-style: none; padding: 0; }
-    li { margin-bottom: 1em; }
-    button { margin-left: 1em; }
-    form { margin-bottom: 2em; }
-    input[type="text"], input[type="number"] { margin-right: 1em; }
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      background: white;
+      border-radius: 15px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .header {
+      background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+      color: white;
+      padding: 30px;
+      text-align: center;
+    }
+
+    .header h1 {
+      font-size: 2.5em;
+      margin-bottom: 10px;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 1.1em;
+    }
+
+    .content {
+      padding: 30px;
+    }
+
+    .form-section {
+      background: #f8f9fa;
+      padding: 25px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+    }
+
+    .form-section h2 {
+      color: #2c3e50;
+      margin-bottom: 20px;
+      font-size: 1.5em;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .form-group label {
+      margin-bottom: 5px;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .form-group input, .form-group select, .form-group textarea {
+      padding: 12px;
+      border: 2px solid #e9ecef;
+      border-radius: 8px;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    .form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 12px 25px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: transform 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    }
+
+    .btn-warning {
+      background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+    }
+
+    .products-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 20px;
+      margin-top: 20px;
+    }
+
+    .product-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      transition: transform 0.3s;
+      border: 1px solid #e9ecef;
+    }
+
+    .product-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+
+    .product-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 15px;
+    }
+
+    .product-name {
+      font-size: 1.2em;
+      font-weight: 600;
+      color: #2c3e50;
+      margin-bottom: 5px;
+    }
+
+    .product-model {
+      color: #7f8c8d;
+      font-size: 0.9em;
+    }
+
+    .product-details {
+      margin-bottom: 15px;
+    }
+
+    .product-detail {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      padding: 5px 0;
+      border-bottom: 1px solid #f1f1f1;
+    }
+
+    .product-detail:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      font-weight: 600;
+      color: #34495e;
+    }
+
+    .detail-value {
+      color: #2c3e50;
+    }
+
+    .product-actions {
+      display: flex;
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .btn-small {
+      padding: 8px 15px;
+      font-size: 12px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 40px;
+      color: #7f8c8d;
+    }
+
+    .error {
+      background: #fee;
+      color: #c33;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid #fcc;
+    }
+
+    .success {
+      background: #efe;
+      color: #3c3;
+      padding: 15px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+      border: 1px solid #cfc;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 20px;
+      margin-bottom: 30px;
+    }
+
+    .stat-card {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2em;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+
+    .stat-label {
+      opacity: 0.9;
+    }
+
+    /* Modal styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+
+    .modal-content {
+      background-color: white;
+      margin: 5% auto;
+      padding: 30px;
+      border-radius: 15px;
+      width: 90%;
+      max-width: 600px;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+      padding-bottom: 15px;
+      border-bottom: 2px solid #f1f1f1;
+    }
+
+    .modal-title {
+      font-size: 1.5em;
+      font-weight: 600;
+      color: #2c3e50;
+    }
+
+    .close {
+      color: #aaa;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: color 0.3s;
+    }
+
+    .close:hover {
+      color: #2c3e50;
+    }
+
+    .modal-form {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 15px;
+      justify-content: flex-end;
+    }
+
+    .btn-secondary {
+      background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+    }
+
+    /* Tab styles */
+    .tabs {
+      display: flex;
+      background: #f8f9fa;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      overflow: hidden;
+    }
+
+    .tab {
+      flex: 1;
+      padding: 15px 20px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: #7f8c8d;
+      transition: all 0.3s;
+      border-bottom: 3px solid transparent;
+    }
+
+    .tab.active {
+      background: white;
+      color: #2c3e50;
+      border-bottom-color: #667eea;
+    }
+
+    .tab:hover {
+      background: rgba(255,255,255,0.8);
+      color: #2c3e50;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .tab-icon {
+      margin-right: 8px;
+    }
   </style>
 </head>
 <body>
-  <h1>Tienda de Ropa</h1>
-  <form id="addForm">
-    <input type="text" id="nombre" placeholder="Nombre" required>
-    <input type="number" id="precio" placeholder="Precio" required>
-    <button type="submit">Agregar producto</button>
-  </form>
-  <ul id="items"></ul>
+  <div class="container">
+    <div class="header">
+      <h1><i class="fas fa-tshirt"></i> MiRopitaChiCarrillo</h1>
+      <p>Sistema de Gestión de Tienda de Ropa</p>
+    </div>
+
+    <div class="content">
+      <!-- Estadísticas -->
+      <div class="stats" id="stats">
+        <div class="stat-card">
+          <div class="stat-number" id="totalProducts">-</div>
+          <div class="stat-label">Productos</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalClients">-</div>
+          <div class="stat-label">Clientes</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-number" id="totalSuppliers">-</div>
+          <div class="stat-label">Proveedores</div>
+        </div>
+      </div>
+
+      <!-- Pestañas -->
+      <div class="tabs">
+        <button class="tab active" onclick="showTab('products')">
+          <i class="fas fa-tshirt tab-icon"></i> Productos
+        </button>
+        <button class="tab" onclick="showTab('clients')">
+          <i class="fas fa-users tab-icon"></i> Clientes
+        </button>
+        <button class="tab" onclick="showTab('suppliers')">
+          <i class="fas fa-truck tab-icon"></i> Proveedores
+        </button>
+      </div>
+
+      <!-- Contenido de Productos -->
+      <div id="products-tab" class="tab-content active">
+        <!-- Formulario de Producto -->
+        <div class="form-section">
+          <h2><i class="fas fa-plus-circle"></i> Agregar Nuevo Producto</h2>
+          <form id="productForm">
+            <div class="form-grid">
+              <div class="form-group">
+                <label for="nombre">Nombre del Producto</label>
+                <input type="text" id="nombre" required>
+              </div>
+              <div class="form-group">
+                <label for="modelo">Modelo</label>
+                <input type="text" id="modelo" required>
+              </div>
+              <div class="form-group">
+                <label for="talla">Talla</label>
+                <select id="talla" required>
+                  <option value="">Seleccionar talla</option>
+                  <option value="XS">XS</option>
+                  <option value="S">S</option>
+                  <option value="M">M</option>
+                  <option value="L">L</option>
+                  <option value="XL">XL</option>
+                  <option value="XXL">XXL</option>
+                  <option value="28">28</option>
+                  <option value="30">30</option>
+                  <option value="32">32</option>
+                  <option value="34">34</option>
+                  <option value="36">36</option>
+                  <option value="38">38</option>
+                  <option value="40">40</option>
+                  <option value="42">42</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="corte">Corte</label>
+                <select id="corte" required>
+                  <option value="">Seleccionar corte</option>
+                  <option value="Recto">Recto</option>
+                  <option value="Corto">Corto</option>
+                  <option value="Largo">Largo</option>
+                  <option value="Ajustado">Ajustado</option>
+                  <option value="Suelto">Suelto</option>
+                  <option value="Vintage">Vintage</option>
+                  <option value="Moderno">Moderno</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="existencia">Existencia</label>
+                <input type="number" id="existencia" min="0" required>
+              </div>
+              <div class="form-group">
+                <label for="precio">Precio ($)</label>
+                <input type="number" id="precio" min="0" step="0.01" required>
+              </div>
+            </div>
+            <div class="form-group">
+              <label>
+                <input type="checkbox" id="en_promocion"> En Promoción
+              </label>
+            </div>
+            <button type="submit" class="btn">
+              <i class="fas fa-save"></i> Guardar Producto
+            </button>
+          </form>
+        </div>
+
+        <!-- Lista de Productos -->
+        <div class="form-section">
+          <h2><i class="fas fa-list"></i> Productos Disponibles</h2>
+          <div id="productsContainer">
+            <div class="loading">
+              <i class="fas fa-spinner fa-spin"></i> Cargando productos...
+            </div>
+          </div>
+        </div>
+      </div>
+
+              <!-- Contenido de Clientes -->
+        <div id="clients-tab" class="tab-content">
+          <!-- Formulario de Cliente -->
+          <div class="form-section">
+            <h2><i class="fas fa-user-plus"></i> Agregar Nuevo Cliente</h2>
+            <form id="clientForm">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="clientNombre">Nombre del Cliente</label>
+                  <input type="text" id="clientNombre" required>
+                </div>
+                <div class="form-group">
+                  <label for="clientApellido">Apellido del Cliente</label>
+                  <input type="text" id="clientApellido" required>
+                </div>
+                <div class="form-group">
+                  <label for="clientTelefono">Teléfono</label>
+                  <input type="tel" id="clientTelefono" required>
+                </div>
+                <div class="form-group">
+                  <label for="clientCalle">Calle</label>
+                  <input type="text" id="clientCalle" required>
+                </div>
+                <div class="form-group">
+                  <label for="clientCruzado">Cruzado con</label>
+                  <input type="text" id="clientCruzado">
+                </div>
+                <div class="form-group">
+                  <label for="clientColonia">Colonia</label>
+                  <input type="text" id="clientColonia" required>
+                </div>
+                <div class="form-group">
+                  <label for="clientCodigoPostal">Código Postal</label>
+                  <input type="text" id="clientCodigoPostal" required>
+                </div>
+                <div class="form-group">
+                  <label for="clientEstado">Estado</label>
+                  <input type="text" id="clientEstado" required>
+                </div>
+                <div class="form-group">
+                  <label for="clientMunicipio">Municipio</label>
+                  <input type="text" id="clientMunicipio" required>
+                </div>
+              </div>
+              <div class="form-group">
+                <label>
+                  <input type="checkbox" id="clientFrecuente"> Cliente Frecuente
+                </label>
+              </div>
+              <button type="submit" class="btn">
+                <i class="fas fa-save"></i> Guardar Cliente
+              </button>
+            </form>
+          </div>
+
+          <!-- Lista de Clientes -->
+          <div class="form-section">
+            <h2><i class="fas fa-users"></i> Clientes Registrados</h2>
+            <div id="clientsContainer">
+              <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i> Cargando clientes...
+              </div>
+            </div>
+          </div>
+        </div>
+
+              <!-- Contenido de Proveedores -->
+        <div id="suppliers-tab" class="tab-content">
+          <!-- Formulario de Proveedor -->
+          <div class="form-section">
+            <h2><i class="fas fa-truck"></i> Agregar Nuevo Proveedor</h2>
+            <form id="supplierForm">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="supplierNombre">Nombre del Proveedor</label>
+                  <input type="text" id="supplierNombre" required>
+                </div>
+                <div class="form-group">
+                  <label for="supplierProductos">Productos Ofrecidos</label>
+                  <textarea id="supplierProductos" rows="3" placeholder="Descripción de los productos que ofrece..."></textarea>
+                </div>
+              </div>
+              <button type="submit" class="btn">
+                <i class="fas fa-save"></i> Guardar Proveedor
+              </button>
+            </form>
+          </div>
+
+          <!-- Lista de Proveedores -->
+          <div class="form-section">
+            <h2><i class="fas fa-truck"></i> Proveedores Registrados</h2>
+            <div id="suppliersContainer">
+              <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i> Cargando proveedores...
+              </div>
+            </div>
+          </div>
+        </div>
+    </div>
+  </div>
 
   <script>
-    const itemsList = document.getElementById('items');
-    const addForm = document.getElementById('addForm');
-    const nombreInput = document.getElementById('nombre');
-    const precioInput = document.getElementById('precio');
+    // Elementos del DOM
+    const productForm = document.getElementById('productForm');
+    const productsContainer = document.getElementById('productsContainer');
+    const clientForm = document.getElementById('clientForm');
+    const clientsContainer = document.getElementById('clientsContainer');
+    const supplierForm = document.getElementById('supplierForm');
+    const suppliersContainer = document.getElementById('suppliersContainer');
+    const statsContainer = document.getElementById('stats');
 
-    function fetchItems() {
-      fetch('/api/items')
-        .then(res => res.json())
-        .then(data => {
-          itemsList.innerHTML = '';
-          data.forEach(item => {
-            const li = document.createElement('li');
-            li.innerHTML = `
-              <strong>${item.nombre}</strong> - $${item.precio}
-              <button onclick="editItem(${item.id}, '${item.nombre}', ${item.precio})">Editar</button>
-              <button onclick="deleteItem(${item.id})">Eliminar</button>
-            `;
-            itemsList.appendChild(li);
-          });
-        });
+    // Función para mostrar mensajes
+    function showMessage(message, type = 'success') {
+      const messageDiv = document.createElement('div');
+      messageDiv.className = type;
+      messageDiv.innerHTML = `<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i> ${message}`;
+      
+      const content = document.querySelector('.content');
+      content.insertBefore(messageDiv, content.firstChild);
+      
+      setTimeout(() => messageDiv.remove(), 5000);
     }
 
-    addForm.onsubmit = function(e) {
-      e.preventDefault();
-      fetch('/api/items', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          nombre: nombreInput.value,
-          precio: parseFloat(precioInput.value)
-        })
-      }).then(() => {
-        nombreInput.value = '';
-        precioInput.value = '';
-        fetchItems();
-      });
-    };
-
-    window.deleteItem = function(id) {
-      fetch(`/api/items/${id}`, { method: 'DELETE' })
-        .then(() => fetchItems());
-    };
-
-    window.editItem = function(id, nombre, precio) {
-      const newNombre = prompt('Nuevo nombre:', nombre);
-      const newPrecio = prompt('Nuevo precio:', precio);
-      if (newNombre && newPrecio) {
-        fetch(`/api/items/${id}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            nombre: newNombre,
-            precio: parseFloat(newPrecio)
-          })
-        }).then(() => fetchItems());
+    // Función para cargar productos
+    async function loadProducts() {
+      try {
+        const response = await fetch('/api/productos');
+        const products = await response.json();
+        
+        displayProducts(products);
+        updateProductStats(products);
+      } catch (error) {
+        console.error('Error cargando productos:', error);
+        productsContainer.innerHTML = '<div class="error">Error al cargar los productos</div>';
       }
-    };
+    }
 
-    fetchItems();
+    // Función para mostrar productos
+    function displayProducts(products) {
+      if (products.length === 0) {
+        productsContainer.innerHTML = '<div class="loading">No hay productos disponibles</div>';
+        return;
+      }
+
+      const productsHTML = products.map(product => `
+        <div class="product-card">
+          <div class="product-header">
+            <div>
+              <div class="product-name">${product.nombre}</div>
+              <div class="product-model">Modelo: ${product.modelo}</div>
+            </div>
+            <div style="text-align: right;">
+              <span style="font-size: 1.5em; font-weight: bold; color: #27ae60;">$${parseFloat(product.precio).toFixed(2)}</span>
+              ${product.en_promocion ? '<br><span style="color: #e74c3c; font-size: 0.8em;">EN PROMOCIÓN</span>' : ''}
+            </div>
+          </div>
+          <div class="product-details">
+            <div class="product-detail">
+              <span class="detail-label">Talla:</span>
+              <span class="detail-value">${product.talla}</span>
+            </div>
+            <div class="product-detail">
+              <span class="detail-label">Corte:</span>
+              <span class="detail-value">${product.corte}</span>
+            </div>
+            <div class="product-detail">
+              <span class="detail-label">Existencia:</span>
+              <span class="detail-value" style="color: ${product.existencia > 5 ? '#27ae60' : product.existencia > 0 ? '#f39c12' : '#e74c3c'}">
+                ${product.existencia} unidades
+              </span>
+            </div>
+          </div>
+          <div class="product-actions">
+            <button class="btn btn-warning btn-small" onclick="editProduct(${product.id_producto})">
+              <i class="fas fa-edit"></i> Editar
+            </button>
+            <button class="btn btn-danger btn-small" onclick="deleteProduct(${product.id_producto})">
+              <i class="fas fa-trash"></i> Eliminar
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      productsContainer.innerHTML = productsHTML;
+    }
+
+    // Función para actualizar estadísticas de productos
+    function updateProductStats(products) {
+      const totalProducts = products.length;
+      const totalStock = products.reduce((sum, product) => sum + product.existencia, 0);
+      const totalValue = products.reduce((sum, product) => sum + (product.existencia * parseFloat(product.precio)), 0);
+
+      document.getElementById('totalProducts').textContent = totalProducts;
+    }
+
+    // Función para agregar producto
+    async function addProduct(productData) {
+      try {
+        const response = await fetch('/api/productos', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(productData)
+        });
+
+        if (response.ok) {
+          showMessage('Producto agregado exitosamente');
+          productForm.reset();
+          loadProducts();
+        } else {
+          const error = await response.json();
+          showMessage(`Error: ${error.error || 'Error al agregar producto'}`, 'error');
+        }
+      } catch (error) {
+        showMessage('Error de conexión', 'error');
+      }
+    }
+
+    // Función para eliminar producto
+    async function deleteProduct(id) {
+      if (!confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/productos/${id}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          showMessage('Producto eliminado exitosamente');
+          loadProducts();
+        } else {
+          showMessage('Error al eliminar el producto', 'error');
+        }
+      } catch (error) {
+        showMessage('Error de conexión', 'error');
+      }
+    }
+
+    // Función para editar producto
+    async function editProduct(id) {
+      try {
+        console.log('Editando producto con ID:', id);
+        const response = await fetch(`/api/productos/${id}`);
+        
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const product = await response.json();
+        console.log('Datos del producto:', product);
+
+        // Crear el modal
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        
+        modal.innerHTML = `
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2 class="modal-title">Editar Producto</h2>
+              <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="editProductForm">
+              <div class="modal-form">
+                <input type="hidden" name="id" value="${product.id_producto}">
+                <div class="form-group">
+                  <label for="editNombre">Nombre del Producto</label>
+                  <input type="text" id="editNombre" name="nombre" value="${product.nombre}" required>
+                </div>
+                <div class="form-group">
+                  <label for="editModelo">Modelo</label>
+                  <input type="text" id="editModelo" name="modelo" value="${product.modelo}" required>
+                </div>
+                <div class="form-group">
+                  <label for="editTalla">Talla</label>
+                  <select id="editTalla" name="talla" required>
+                    <option value="">Seleccionar talla</option>
+                    <option value="XS" ${product.talla === 'XS' ? 'selected' : ''}>XS</option>
+                    <option value="S" ${product.talla === 'S' ? 'selected' : ''}>S</option>
+                    <option value="M" ${product.talla === 'M' ? 'selected' : ''}>M</option>
+                    <option value="L" ${product.talla === 'L' ? 'selected' : ''}>L</option>
+                    <option value="XL" ${product.talla === 'XL' ? 'selected' : ''}>XL</option>
+                    <option value="XXL" ${product.talla === 'XXL' ? 'selected' : ''}>XXL</option>
+                    <option value="28" ${product.talla === '28' ? 'selected' : ''}>28</option>
+                    <option value="30" ${product.talla === '30' ? 'selected' : ''}>30</option>
+                    <option value="32" ${product.talla === '32' ? 'selected' : ''}>32</option>
+                    <option value="34" ${product.talla === '34' ? 'selected' : ''}>34</option>
+                    <option value="36" ${product.talla === '36' ? 'selected' : ''}>36</option>
+                    <option value="38" ${product.talla === '38' ? 'selected' : ''}>38</option>
+                    <option value="40" ${product.talla === '40' ? 'selected' : ''}>40</option>
+                    <option value="42" ${product.talla === '42' ? 'selected' : ''}>42</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="editCorte">Corte</label>
+                  <select id="editCorte" name="corte" required>
+                    <option value="">Seleccionar corte</option>
+                    <option value="Recto" ${product.corte === 'Recto' ? 'selected' : ''}>Recto</option>
+                    <option value="Corto" ${product.corte === 'Corto' ? 'selected' : ''}>Corto</option>
+                    <option value="Largo" ${product.corte === 'Largo' ? 'selected' : ''}>Largo</option>
+                    <option value="Ajustado" ${product.corte === 'Ajustado' ? 'selected' : ''}>Ajustado</option>
+                    <option value="Suelto" ${product.corte === 'Suelto' ? 'selected' : ''}>Suelto</option>
+                    <option value="Vintage" ${product.corte === 'Vintage' ? 'selected' : ''}>Vintage</option>
+                    <option value="Moderno" ${product.corte === 'Moderno' ? 'selected' : ''}>Moderno</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="editExistencia">Existencia</label>
+                  <input type="number" id="editExistencia" name="existencia" value="${product.existencia}" min="0" required>
+                </div>
+                <div class="form-group">
+                  <label for="editPrecio">Precio ($)</label>
+                  <input type="number" id="editPrecio" name="precio" value="${product.precio}" min="0" step="0.01" required>
+                </div>
+                <div class="form-group">
+                  <label>
+                    <input type="checkbox" name="en_promocion" ${product.en_promocion ? 'checked' : ''}> En Promoción
+                  </label>
+                </div>
+              </div>
+              <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                <button type="submit" class="btn">
+                  <i class="fas fa-save"></i> Guardar Cambios
+                </button>
+              </div>
+            </form>
+          </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        // Agregar event listener al formulario
+        const editForm = document.getElementById('editProductForm');
+        editForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          const formData = new FormData(e.target);
+          const productData = {
+            nombre: formData.get('nombre'),
+            modelo: formData.get('modelo'),
+            talla: formData.get('talla'),
+            corte: formData.get('corte'),
+            existencia: parseInt(formData.get('existencia')),
+            precio: parseFloat(formData.get('precio')),
+            en_promocion: formData.get('en_promocion') === 'on'
+          };
+          
+          try {
+            const updateResponse = await fetch(`/api/productos/${id}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(productData)
+            });
+
+            if (updateResponse.ok) {
+              showMessage('Producto actualizado exitosamente');
+              closeModal();
+              loadProducts();
+            } else {
+              const error = await updateResponse.json();
+              showMessage(`Error: ${error.error || 'Error al actualizar producto'}`, 'error');
+            }
+          } catch (error) {
+            console.error('Error actualizando producto:', error);
+            showMessage('Error de conexión', 'error');
+          }
+        });
+        
+      } catch (error) {
+        console.error('Error cargando producto para editar:', error);
+        showMessage('Error al cargar los datos del producto para editar', 'error');
+      }
+    }
+
+    // Función para cerrar el modal
+    function closeModal() {
+      const modal = document.querySelector('.modal');
+      if (modal) {
+        modal.remove();
+      }
+    }
+
+    // Event listeners
+    productForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(productForm);
+      const productData = {
+        nombre: document.getElementById('nombre').value,
+        modelo: document.getElementById('modelo').value,
+        talla: document.getElementById('talla').value,
+        corte: document.getElementById('corte').value,
+        existencia: parseInt(document.getElementById('existencia').value),
+        precio: parseFloat(document.getElementById('precio').value),
+        en_promocion: document.getElementById('en_promocion').checked
+      };
+
+      await addProduct(productData);
+    });
+
+    // Cargar productos al iniciar
+    loadProducts();
+    updateStats();
+
+    // Función para cambiar pestañas
+    function showTab(tabName) {
+      // Ocultar todas las pestañas
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      document.querySelectorAll('.tab').forEach(tab => {
+        tab.classList.remove('active');
+      });
+
+      // Mostrar la pestaña seleccionada
+      document.getElementById(tabName + '-tab').classList.add('active');
+      event.target.classList.add('active');
+
+      // Cargar datos según la pestaña
+      if (tabName === 'clients') {
+        loadClients();
+      } else if (tabName === 'suppliers') {
+        loadSuppliers();
+      }
+    }
+
+    // Función para cargar clientes
+    async function loadClients() {
+      try {
+        const response = await fetch('/api/clientes');
+        const clients = await response.json();
+        displayClients(clients);
+      } catch (error) {
+        console.error('Error cargando clientes:', error);
+        clientsContainer.innerHTML = '<div class="error">Error al cargar los clientes</div>';
+      }
+    }
+
+    // Función para mostrar clientes
+    function displayClients(clients) {
+      if (clients.length === 0) {
+        clientsContainer.innerHTML = '<div class="loading">No hay clientes registrados</div>';
+        return;
+      }
+
+      const clientsHTML = clients.map(client => `
+        <div class="product-card">
+          <div class="product-header">
+            <div>
+              <div class="product-name">${client.nombre_cliente} ${client.apellido_cliente}</div>
+              <div class="product-model">
+                <i class="fas fa-phone"></i> ${client.telefono}
+                ${client.frecuente ? '<span style="color: #e74c3c; margin-left: 10px;"><i class="fas fa-star"></i> Frecuente</span>' : ''}
+              </div>
+            </div>
+          </div>
+          <div class="product-details">
+            <div class="product-detail">
+              <span class="detail-label">Dirección:</span>
+              <span class="detail-value">${client.calle} ${client.cruzado ? `y ${client.cruzado}` : ''}</span>
+            </div>
+            <div class="product-detail">
+              <span class="detail-label">Colonia:</span>
+              <span class="detail-value">${client.colonia}</span>
+            </div>
+            <div class="product-detail">
+              <span class="detail-label">C.P.:</span>
+              <span class="detail-value">${client.codigo_postal}</span>
+            </div>
+            <div class="product-detail">
+              <span class="detail-label">Ubicación:</span>
+              <span class="detail-value">${client.municipio}, ${client.estado}</span>
+            </div>
+          </div>
+          <div class="product-actions">
+            <button class="btn btn-warning btn-small" onclick="editClient(${client.id_cliente})">
+              <i class="fas fa-edit"></i> Editar
+            </button>
+            <button class="btn btn-danger btn-small" onclick="deleteClient(${client.id_cliente})">
+              <i class="fas fa-trash"></i> Eliminar
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      clientsContainer.innerHTML = clientsHTML;
+    }
+
+    // Función para agregar cliente
+    async function addClient(clientData) {
+      try {
+        const response = await fetch('/api/clientes', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(clientData)
+        });
+
+        if (response.ok) {
+          showMessage('Cliente agregado exitosamente');
+          clientForm.reset();
+          loadClients();
+        } else {
+          const error = await response.json();
+          showMessage(`Error: ${error.error || 'Error al agregar cliente'}`, 'error');
+        }
+      } catch (error) {
+        showMessage('Error de conexión', 'error');
+      }
+    }
+
+    // Función para eliminar cliente
+    async function deleteClient(id) {
+      if (!confirm('¿Estás seguro de que quieres eliminar este cliente?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/clientes/${id}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          showMessage('Cliente eliminado exitosamente');
+          loadClients();
+        } else {
+          showMessage('Error al eliminar el cliente', 'error');
+        }
+      } catch (error) {
+        showMessage('Error de conexión', 'error');
+      }
+    }
+
+    // Función para editar cliente
+    async function editClient(id) {
+      try {
+        const response = await fetch(`/api/clientes/${id}`);
+        const client = await response.json();
+
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        
+        modal.innerHTML = `
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2 class="modal-title">Editar Cliente</h2>
+              <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="editClientForm">
+              <div class="modal-form">
+                <input type="hidden" name="id" value="${client.id_cliente}">
+                <div class="form-group">
+                  <label for="editClientNombre">Nombre del Cliente</label>
+                  <input type="text" id="editClientNombre" name="nombre_cliente" value="${client.nombre_cliente}" required>
+                </div>
+                <div class="form-group">
+                  <label for="editClientApellido">Apellido del Cliente</label>
+                  <input type="text" id="editClientApellido" name="apellido_cliente" value="${client.apellido_cliente}" required>
+                </div>
+                <div class="form-group">
+                  <label for="editClientTelefono">Teléfono</label>
+                  <input type="tel" id="editClientTelefono" name="telefono" value="${client.telefono}" required>
+                </div>
+                <div class="form-group">
+                  <label for="editClientCalle">Calle</label>
+                  <input type="text" id="editClientCalle" name="calle" value="${client.calle}" required>
+                </div>
+                <div class="form-group">
+                  <label for="editClientCruzado">Cruzado con</label>
+                  <input type="text" id="editClientCruzado" name="cruzado" value="${client.cruzado || ''}">
+                </div>
+                <div class="form-group">
+                  <label for="editClientColonia">Colonia</label>
+                  <input type="text" id="editClientColonia" name="colonia" value="${client.colonia}" required>
+                </div>
+                <div class="form-group">
+                  <label for="editClientCodigoPostal">Código Postal</label>
+                  <input type="text" id="editClientCodigoPostal" name="codigo_postal" value="${client.codigo_postal}" required>
+                </div>
+                <div class="form-group">
+                  <label for="editClientEstado">Estado</label>
+                  <input type="text" id="editClientEstado" name="estado" value="${client.estado}" required>
+                </div>
+                <div class="form-group">
+                  <label for="editClientMunicipio">Municipio</label>
+                  <input type="text" id="editClientMunicipio" name="municipio" value="${client.municipio}" required>
+                </div>
+                <div class="form-group">
+                  <label>
+                    <input type="checkbox" name="frecuente" ${client.frecuente ? 'checked' : ''}> Cliente Frecuente
+                  </label>
+                </div>
+              </div>
+              <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                <button type="submit" class="btn">
+                  <i class="fas fa-save"></i> Guardar Cambios
+                </button>
+              </div>
+            </form>
+          </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const editForm = document.getElementById('editClientForm');
+        editForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          const formData = new FormData(e.target);
+          const clientData = {
+            nombre_cliente: formData.get('nombre_cliente'),
+            apellido_cliente: formData.get('apellido_cliente'),
+            telefono: formData.get('telefono'),
+            calle: formData.get('calle'),
+            cruzado: formData.get('cruzado'),
+            colonia: formData.get('colonia'),
+            codigo_postal: formData.get('codigo_postal'),
+            estado: formData.get('estado'),
+            municipio: formData.get('municipio'),
+            frecuente: formData.get('frecuente') === 'on'
+          };
+          
+          try {
+            const updateResponse = await fetch(`/api/clientes/${id}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(clientData)
+            });
+
+            if (updateResponse.ok) {
+              showMessage('Cliente actualizado exitosamente');
+              closeModal();
+              loadClients();
+            } else {
+              const error = await updateResponse.json();
+              showMessage(`Error: ${error.error || 'Error al actualizar cliente'}`, 'error');
+            }
+          } catch (error) {
+            console.error('Error actualizando cliente:', error);
+            showMessage('Error de conexión', 'error');
+          }
+        });
+        
+      } catch (error) {
+        console.error('Error cargando cliente para editar:', error);
+        showMessage('Error al cargar los datos del cliente para editar', 'error');
+      }
+    }
+
+    // Función para cargar proveedores
+    async function loadSuppliers() {
+      try {
+        const response = await fetch('/api/proveedores');
+        const suppliers = await response.json();
+        displaySuppliers(suppliers);
+      } catch (error) {
+        console.error('Error cargando proveedores:', error);
+        suppliersContainer.innerHTML = '<div class="error">Error al cargar los proveedores</div>';
+      }
+    }
+
+    // Función para mostrar proveedores
+    function displaySuppliers(suppliers) {
+      if (suppliers.length === 0) {
+        suppliersContainer.innerHTML = '<div class="loading">No hay proveedores registrados</div>';
+        return;
+      }
+
+      const suppliersHTML = suppliers.map(supplier => `
+        <div class="product-card">
+          <div class="product-header">
+            <div>
+              <div class="product-name">${supplier.nombre}</div>
+              <div class="product-model">ID: ${supplier.id_proveedor}</div>
+            </div>
+          </div>
+          <div class="product-details">
+            <div class="product-detail">
+              <span class="detail-label">Productos Ofrecidos:</span>
+              <span class="detail-value">${supplier.productos_ofrecidos || 'No especificado'}</span>
+            </div>
+          </div>
+          <div class="product-actions">
+            <button class="btn btn-warning btn-small" onclick="editSupplier(${supplier.id_proveedor})">
+              <i class="fas fa-edit"></i> Editar
+            </button>
+            <button class="btn btn-danger btn-small" onclick="deleteSupplier(${supplier.id_proveedor})">
+              <i class="fas fa-trash"></i> Eliminar
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      suppliersContainer.innerHTML = suppliersHTML;
+    }
+
+    // Función para agregar proveedor
+    async function addSupplier(supplierData) {
+      try {
+        const response = await fetch('/api/proveedores', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(supplierData)
+        });
+
+        if (response.ok) {
+          showMessage('Proveedor agregado exitosamente');
+          supplierForm.reset();
+          loadSuppliers();
+        } else {
+          const error = await response.json();
+          showMessage(`Error: ${error.error || 'Error al agregar proveedor'}`, 'error');
+        }
+      } catch (error) {
+        showMessage('Error de conexión', 'error');
+      }
+    }
+
+    // Función para eliminar proveedor
+    async function deleteSupplier(id) {
+      if (!confirm('¿Estás seguro de que quieres eliminar este proveedor?')) {
+        return;
+      }
+
+      try {
+        const response = await fetch(`/api/proveedores/${id}`, {
+          method: 'DELETE'
+        });
+
+        if (response.ok) {
+          showMessage('Proveedor eliminado exitosamente');
+          loadSuppliers();
+        } else {
+          showMessage('Error al eliminar el proveedor', 'error');
+        }
+      } catch (error) {
+        showMessage('Error de conexión', 'error');
+      }
+    }
+
+    // Función para editar proveedor
+    async function editSupplier(id) {
+      try {
+        const response = await fetch(`/api/proveedores/${id}`);
+        const supplier = await response.json();
+
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        
+        modal.innerHTML = `
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2 class="modal-title">Editar Proveedor</h2>
+              <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form id="editSupplierForm">
+              <div class="modal-form">
+                <input type="hidden" name="id" value="${supplier.id_proveedor}">
+                <div class="form-group">
+                  <label for="editSupplierNombre">Nombre del Proveedor</label>
+                  <input type="text" id="editSupplierNombre" name="nombre" value="${supplier.nombre}" required>
+                </div>
+                <div class="form-group">
+                  <label for="editSupplierProductos">Productos Ofrecidos</label>
+                  <textarea id="editSupplierProductos" name="productos_ofrecidos" rows="3" placeholder="Descripción de los productos que ofrece...">${supplier.productos_ofrecidos || ''}</textarea>
+                </div>
+              </div>
+              <div class="modal-actions">
+                <button type="button" class="btn btn-secondary" onclick="closeModal()">Cancelar</button>
+                <button type="submit" class="btn">
+                  <i class="fas fa-save"></i> Guardar Cambios
+                </button>
+              </div>
+            </form>
+          </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+        const editForm = document.getElementById('editSupplierForm');
+        editForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          const formData = new FormData(e.target);
+          const supplierData = {
+            nombre: formData.get('nombre'),
+            productos_ofrecidos: formData.get('productos_ofrecidos')
+          };
+          
+          try {
+            const updateResponse = await fetch(`/api/proveedores/${id}`, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(supplierData)
+            });
+
+            if (updateResponse.ok) {
+              showMessage('Proveedor actualizado exitosamente');
+              closeModal();
+              loadSuppliers();
+            } else {
+              const error = await updateResponse.json();
+              showMessage(`Error: ${error.error || 'Error al actualizar proveedor'}`, 'error');
+            }
+          } catch (error) {
+            console.error('Error actualizando proveedor:', error);
+            showMessage('Error de conexión', 'error');
+          }
+        });
+        
+      } catch (error) {
+        console.error('Error cargando proveedor para editar:', error);
+        showMessage('Error al cargar los datos del proveedor para editar', 'error');
+      }
+    }
+
+    // Función para actualizar estadísticas
+    async function updateStats() {
+      try {
+        const [productsResponse, clientsResponse, suppliersResponse] = await Promise.all([
+          fetch('/api/productos'),
+          fetch('/api/clientes'),
+          fetch('/api/proveedores')
+        ]);
+
+        const products = await productsResponse.json();
+        const clients = await clientsResponse.json();
+        const suppliers = await suppliersResponse.json();
+
+        document.getElementById('totalProducts').textContent = products.length;
+        document.getElementById('totalClients').textContent = clients.length;
+        document.getElementById('totalSuppliers').textContent = suppliers.length;
+      } catch (error) {
+        console.error('Error actualizando estadísticas:', error);
+      }
+    }
+
+    // Event listeners para formularios
+    clientForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const clientData = {
+        nombre_cliente: document.getElementById('clientNombre').value,
+        apellido_cliente: document.getElementById('clientApellido').value,
+        telefono: document.getElementById('clientTelefono').value,
+        calle: document.getElementById('clientCalle').value,
+        cruzado: document.getElementById('clientCruzado').value,
+        colonia: document.getElementById('clientColonia').value,
+        codigo_postal: document.getElementById('clientCodigoPostal').value,
+        estado: document.getElementById('clientEstado').value,
+        municipio: document.getElementById('clientMunicipio').value,
+        frecuente: document.getElementById('clientFrecuente').checked
+      };
+
+      await addClient(clientData);
+    });
+
+    supplierForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const supplierData = {
+        nombre: document.getElementById('supplierNombre').value,
+        productos_ofrecidos: document.getElementById('supplierProductos').value
+      };
+
+      await addSupplier(supplierData);
+    });
+
+    // Hacer funciones globales para los botones
+    window.deleteProduct = deleteProduct;
+    window.editProduct = editProduct;
+    window.deleteClient = deleteClient;
+    window.editClient = editClient;
+    window.deleteSupplier = deleteSupplier;
+    window.editSupplier = editSupplier;
+    window.closeModal = closeModal;
+    window.showTab = showTab;
   </script>
 </body>
 </html>
