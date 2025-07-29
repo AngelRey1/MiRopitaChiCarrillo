@@ -14,7 +14,14 @@ export async function getAllUsers(): Promise<User[]> {
     WHERE u.activo = true
     GROUP BY u.id
   `);
-  return rows as User[];
+  
+  // Procesar los roles para convertirlos en array
+  const processedRows = (rows as any[]).map((row: any) => ({
+    ...row,
+    roles: row.roles ? row.roles.split(',') : []
+  }));
+  
+  return processedRows as User[];
 }
 
 export async function getUserById(id: number): Promise<UserWithRoles | null> {
@@ -267,4 +274,115 @@ export function hasPermission(userRoles: Role[], requiredPermission: string): bo
   return userRoles.some(role => 
     role.permisos.includes('*') || role.permisos.includes(requiredPermission)
   );
+}
+
+// Nuevas funciones para CRUD completo de usuarios
+export async function createUserInRepo(userData: { 
+  username: string; 
+  password: string; 
+  nombre: string; 
+  apellido: string; 
+  email: string; 
+  activo: boolean 
+}): Promise<User> {
+  const hashedPassword = await bcrypt.hash(userData.password, 10);
+  
+  const [result] = await pool.query(
+    'INSERT INTO usuarios (username, password, nombre, apellido, email, activo) VALUES (?, ?, ?, ?, ?, ?)',
+    [userData.username, hashedPassword, userData.nombre, userData.apellido, userData.email, userData.activo]
+  );
+  
+  const [rows] = await pool.query('SELECT * FROM usuarios WHERE id = ?', [(result as any).insertId]);
+  const row = (rows as any[])[0];
+  
+  return {
+    id: row.id,
+    username: row.username,
+    nombre: row.nombre,
+    apellido: row.apellido,
+    email: row.email,
+    password: row.password,
+    telefono: row.telefono || '',
+    activo: row.activo,
+    roles: []
+  };
+}
+
+export async function updateUserInRepo(userId: number, userData: { 
+  username: string; 
+  nombre: string; 
+  apellido: string; 
+  email: string; 
+  activo: boolean 
+}): Promise<User | null> {
+  const [result] = await pool.query(
+    'UPDATE usuarios SET username = ?, nombre = ?, apellido = ?, email = ?, activo = ? WHERE id = ?',
+    [userData.username, userData.nombre, userData.apellido, userData.email, userData.activo, userId]
+  );
+  
+  if ((result as any).affectedRows === 0) {
+    return null;
+  }
+  
+  const [rows] = await pool.query('SELECT * FROM usuarios WHERE id = ?', [userId]);
+  const row = (rows as any[])[0];
+  
+  return {
+    id: row.id,
+    username: row.username,
+    nombre: row.nombre,
+    apellido: row.apellido,
+    email: row.email,
+    password: row.password,
+    telefono: row.telefono || '',
+    activo: row.activo,
+    roles: []
+  };
+}
+
+// Nuevas funciones para CRUD completo de roles
+export async function createRoleInRepo(roleData: { 
+  nombre: string; 
+  descripcion: string; 
+  permisos: string[] 
+}): Promise<Role> {
+  const [result] = await pool.query(
+    'INSERT INTO roles (nombre, descripcion, permisos) VALUES (?, ?, ?)',
+    [roleData.nombre, roleData.descripcion, JSON.stringify(roleData.permisos)]
+  );
+  
+  const [rows] = await pool.query('SELECT * FROM roles WHERE id = ?', [(result as any).insertId]);
+  const row = (rows as any[])[0];
+  
+  return {
+    id: row.id,
+    nombre: row.nombre,
+    descripcion: row.descripcion,
+    permisos: JSON.parse(row.permisos || '[]')
+  };
+}
+
+export async function updateRoleInRepo(roleId: number, roleData: { 
+  nombre: string; 
+  descripcion: string; 
+  permisos: string[] 
+}): Promise<Role | null> {
+  const [result] = await pool.query(
+    'UPDATE roles SET nombre = ?, descripcion = ?, permisos = ? WHERE id = ?',
+    [roleData.nombre, roleData.descripcion, JSON.stringify(roleData.permisos), roleId]
+  );
+  
+  if ((result as any).affectedRows === 0) {
+    return null;
+  }
+  
+  const [rows] = await pool.query('SELECT * FROM roles WHERE id = ?', [roleId]);
+  const row = (rows as any[])[0];
+  
+  return {
+    id: row.id,
+    nombre: row.nombre,
+    descripcion: row.descripcion,
+    permisos: JSON.parse(row.permisos || '[]')
+  };
 } 

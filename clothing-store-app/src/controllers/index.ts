@@ -30,7 +30,11 @@ import {
   getAllRoles,
   assignRoleToUser,
   removeRoleFromUser,
-  updateUserStatus
+  updateUserStatus,
+  createUserInRepo,
+  updateUserInRepo,
+  createRoleInRepo,
+  updateRoleInRepo
 } from './userRepository';
 import {
   getAllTurnos,
@@ -444,3 +448,86 @@ export {
   getDevolucionesByVenta,
   getDevolucionesStats
 } from './devolucionRepository';
+
+// Nuevas funciones para CRUD completo de usuarios y roles
+export async function createUser(req: Request, res: Response) {
+  try {
+    const { username, password, nombre, apellido, email, activo = true } = req.body;
+    
+    // Validar campos requeridos
+    if (!username || !password || !nombre || !apellido || !email) {
+      return res.status(400).json({ error: 'Todos los campos son requeridos' });
+    }
+    
+    // Crear usuario usando la función del repositorio
+    const newUser = await createUserInRepo({ username, password, nombre, apellido, email, activo });
+    res.status(201).json(newUser);
+  } catch (err) {
+    console.error('Error creando usuario:', err);
+    res.status(500).json({ error: 'Error al crear usuario', details: err });
+  }
+}
+
+export async function updateUser(req: Request, res: Response) {
+  try {
+    const userId = parseInt(req.params.id, 10);
+    const { username, nombre, apellido, email, activo } = req.body;
+    
+    // Validar campos requeridos
+    if (!username || !nombre || !apellido || !email) {
+      return res.status(400).json({ error: 'Todos los campos son requeridos' });
+    }
+    
+    // Actualizar usuario usando la función del repositorio
+    const updatedUser = await updateUserInRepo(userId, { username, nombre, apellido, email, activo });
+    if (updatedUser) {
+      res.json(updatedUser);
+    } else {
+      res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+  } catch (err) {
+    console.error('Error actualizando usuario:', err);
+    res.status(500).json({ error: 'Error al actualizar usuario', details: err });
+  }
+}
+
+export async function createRole(req: Request, res: Response) {
+  try {
+    const { nombre, descripcion, permisos = [] } = req.body;
+    
+    // Validar campos requeridos
+    if (!nombre) {
+      return res.status(400).json({ error: 'El nombre del rol es requerido' });
+    }
+    
+    // Crear rol usando la función del repositorio
+    const newRole = await createRoleInRepo({ nombre, descripcion, permisos });
+    res.status(201).json(newRole);
+  } catch (err) {
+    console.error('Error creando rol:', err);
+    res.status(500).json({ error: 'Error al crear rol', details: err });
+  }
+}
+
+export async function updateRole(req: Request, res: Response) {
+  try {
+    const roleId = parseInt(req.params.id, 10);
+    const { nombre, descripcion, permisos = [] } = req.body;
+    
+    // Validar campos requeridos
+    if (!nombre) {
+      return res.status(400).json({ error: 'El nombre del rol es requerido' });
+    }
+    
+    // Actualizar rol usando la función del repositorio
+    const updatedRole = await updateRoleInRepo(roleId, { nombre, descripcion, permisos });
+    if (updatedRole) {
+      res.json(updatedRole);
+    } else {
+      res.status(404).json({ error: 'Rol no encontrado' });
+    }
+  } catch (err) {
+    console.error('Error actualizando rol:', err);
+    res.status(500).json({ error: 'Error al actualizar rol', details: err });
+  }
+}
