@@ -12,15 +12,10 @@ const pool = mysql.createPool({
 // Obtener todas las devoluciones
 export async function getAllDevoluciones(): Promise<Devolucion[]> {
   const [rows] = await pool.query(`
-    SELECT d.*, 
-           c.nombre as cliente_nombre, c.apellido as cliente_apellido,
-           u.nombre as usuario_nombre, u.apellido as usuario_apellido,
-           v.fecha_venta, v.total as venta_total
+    SELECT d.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido
     FROM devoluciones d
-    LEFT JOIN cliente c ON d.cliente_id = c.id
     LEFT JOIN usuarios u ON d.usuario_id = u.id
-    LEFT JOIN ventas v ON d.venta_id = v.id
-    ORDER BY d.fecha_devolucion DESC
+    ORDER BY d.created_at DESC
   `);
   
   return (rows as any[]).map((row: any) => ({
@@ -34,30 +29,22 @@ export async function getAllDevoluciones(): Promise<Devolucion[]> {
     total_devolucion: row.total_devolucion,
     observaciones: row.observaciones,
     created_at: row.created_at,
-    cliente: row.cliente_id ? {
-      nombre: row.cliente_nombre,
-      apellido: row.cliente_apellido
-    } : undefined,
-    usuario: {
+    cliente: undefined, // Por ahora no incluimos cliente
+    usuario: row.usuario_id ? {
       nombre: row.usuario_nombre,
       apellido: row.usuario_apellido
-    }
+    } : undefined
   }));
 }
 
 // Obtener devoluciones por usuario
 export async function getDevolucionesByUser(userId: number): Promise<Devolucion[]> {
   const [rows] = await pool.query(`
-    SELECT d.*, 
-           c.nombre as cliente_nombre, c.apellido as cliente_apellido,
-           u.nombre as usuario_nombre, u.apellido as usuario_apellido,
-           v.fecha_venta, v.total as venta_total
+    SELECT d.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido
     FROM devoluciones d
-    LEFT JOIN cliente c ON d.cliente_id = c.id
     LEFT JOIN usuarios u ON d.usuario_id = u.id
-    LEFT JOIN ventas v ON d.venta_id = v.id
     WHERE d.usuario_id = ?
-    ORDER BY d.fecha_devolucion DESC
+    ORDER BY d.created_at DESC
   `, [userId]);
   
   return (rows as any[]).map((row: any) => ({
@@ -71,28 +58,20 @@ export async function getDevolucionesByUser(userId: number): Promise<Devolucion[
     total_devolucion: row.total_devolucion,
     observaciones: row.observaciones,
     created_at: row.created_at,
-    cliente: row.cliente_id ? {
-      nombre: row.cliente_nombre,
-      apellido: row.cliente_apellido
-    } : undefined,
-    usuario: {
+    cliente: undefined, // Por ahora no incluimos cliente
+    usuario: row.usuario_id ? {
       nombre: row.usuario_nombre,
       apellido: row.usuario_apellido
-    }
+    } : undefined
   }));
 }
 
 // Obtener devolución por ID
 export async function getDevolucionById(id: number): Promise<Devolucion | null> {
   const [rows] = await pool.query(`
-    SELECT d.*, 
-           c.nombre as cliente_nombre, c.apellido as cliente_apellido,
-           u.nombre as usuario_nombre, u.apellido as usuario_apellido,
-           v.fecha_venta, v.total as venta_total
+    SELECT d.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido
     FROM devoluciones d
-    LEFT JOIN cliente c ON d.cliente_id = c.id
     LEFT JOIN usuarios u ON d.usuario_id = u.id
-    LEFT JOIN ventas v ON d.venta_id = v.id
     WHERE d.id = ?
   `, [id]);
   
@@ -110,14 +89,11 @@ export async function getDevolucionById(id: number): Promise<Devolucion | null> 
     total_devolucion: row.total_devolucion,
     observaciones: row.observaciones,
     created_at: row.created_at,
-    cliente: row.cliente_id ? {
-      nombre: row.cliente_nombre,
-      apellido: row.cliente_apellido
-    } : undefined,
-    usuario: {
+    cliente: undefined, // Por ahora no incluimos cliente
+    usuario: row.usuario_id ? {
       nombre: row.usuario_nombre,
       apellido: row.usuario_apellido
-    }
+    } : undefined
   };
 }
 

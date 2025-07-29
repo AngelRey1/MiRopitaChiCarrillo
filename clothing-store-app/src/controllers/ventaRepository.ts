@@ -12,8 +12,7 @@ const pool = mysql.createPool({
 // Obtener todas las ventas
 export async function getAllVentas(): Promise<Venta[]> {
   const [rows] = await pool.query(`
-    SELECT v.*, 
-           u.nombre as usuario_nombre, u.apellido as usuario_apellido
+    SELECT v.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido
     FROM ventas v
     LEFT JOIN usuarios u ON v.usuario_id = u.id
     ORDER BY v.created_at DESC
@@ -30,18 +29,17 @@ export async function getAllVentas(): Promise<Venta[]> {
     observaciones: row.observaciones,
     created_at: row.created_at,
     cliente: undefined, // Por ahora no incluimos cliente
-    usuario: {
+    usuario: row.usuario_id ? {
       nombre: row.usuario_nombre,
       apellido: row.usuario_apellido
-    }
+    } : undefined
   }));
 }
 
 // Obtener ventas por usuario
 export async function getVentasByUser(userId: number): Promise<Venta[]> {
   const [rows] = await pool.query(`
-    SELECT v.*, 
-           u.nombre as usuario_nombre, u.apellido as usuario_apellido
+    SELECT v.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido
     FROM ventas v
     LEFT JOIN usuarios u ON v.usuario_id = u.id
     WHERE v.usuario_id = ?
@@ -59,18 +57,17 @@ export async function getVentasByUser(userId: number): Promise<Venta[]> {
     observaciones: row.observaciones,
     created_at: row.created_at,
     cliente: undefined, // Por ahora no incluimos cliente
-    usuario: {
+    usuario: row.usuario_id ? {
       nombre: row.usuario_nombre,
       apellido: row.usuario_apellido
-    }
+    } : undefined
   }));
 }
 
 // Obtener venta por ID
 export async function getVentaById(id: number): Promise<Venta | null> {
   const [rows] = await pool.query(`
-    SELECT v.*, 
-           u.nombre as usuario_nombre, u.apellido as usuario_apellido
+    SELECT v.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido
     FROM ventas v
     LEFT JOIN usuarios u ON v.usuario_id = u.id
     WHERE v.id = ?
@@ -90,10 +87,10 @@ export async function getVentaById(id: number): Promise<Venta | null> {
     observaciones: row.observaciones,
     created_at: row.created_at,
     cliente: undefined, // Por ahora no incluimos cliente
-    usuario: {
+    usuario: row.usuario_id ? {
       nombre: row.usuario_nombre,
       apellido: row.usuario_apellido
-    }
+    } : undefined
   };
 }
 

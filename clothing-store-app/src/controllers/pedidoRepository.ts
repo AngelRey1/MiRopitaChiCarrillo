@@ -12,8 +12,7 @@ const pool = mysql.createPool({
 // Obtener todos los pedidos
 export async function getAllPedidos(): Promise<Pedido[]> {
   const [rows] = await pool.query(`
-    SELECT p.*, 
-           u.nombre as usuario_nombre, u.apellido as usuario_apellido
+    SELECT p.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido
     FROM pedidos p
     LEFT JOIN usuarios u ON p.usuario_id = u.id
     ORDER BY p.created_at DESC
@@ -30,18 +29,17 @@ export async function getAllPedidos(): Promise<Pedido[]> {
     observaciones: row.observaciones,
     created_at: row.created_at,
     proveedor: undefined, // Por ahora no incluimos proveedor
-    usuario: {
+    usuario: row.usuario_id ? {
       nombre: row.usuario_nombre,
       apellido: row.usuario_apellido
-    }
+    } : undefined
   }));
 }
 
 // Obtener pedidos por usuario
 export async function getPedidosByUser(userId: number): Promise<Pedido[]> {
   const [rows] = await pool.query(`
-    SELECT p.*, 
-           u.nombre as usuario_nombre, u.apellido as usuario_apellido
+    SELECT p.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido
     FROM pedidos p
     LEFT JOIN usuarios u ON p.usuario_id = u.id
     WHERE p.usuario_id = ?
@@ -59,18 +57,17 @@ export async function getPedidosByUser(userId: number): Promise<Pedido[]> {
     observaciones: row.observaciones,
     created_at: row.created_at,
     proveedor: undefined, // Por ahora no incluimos proveedor
-    usuario: {
+    usuario: row.usuario_id ? {
       nombre: row.usuario_nombre,
       apellido: row.usuario_apellido
-    }
+    } : undefined
   }));
 }
 
 // Obtener pedido por ID
 export async function getPedidoById(id: number): Promise<Pedido | null> {
   const [rows] = await pool.query(`
-    SELECT p.*, 
-           u.nombre as usuario_nombre, u.apellido as usuario_apellido
+    SELECT p.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido
     FROM pedidos p
     LEFT JOIN usuarios u ON p.usuario_id = u.id
     WHERE p.id = ?
@@ -90,10 +87,10 @@ export async function getPedidoById(id: number): Promise<Pedido | null> {
     observaciones: row.observaciones,
     created_at: row.created_at,
     proveedor: undefined, // Por ahora no incluimos proveedor
-    usuario: {
+    usuario: row.usuario_id ? {
       nombre: row.usuario_nombre,
       apellido: row.usuario_apellido
-    }
+    } : undefined
   };
 }
 
