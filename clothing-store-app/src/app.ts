@@ -21,6 +21,57 @@ app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/index.html'));
 });
 
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/login.html'));
+});
+
+app.get('/dashboard', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/dashboard.html'));
+});
+
+// Rutas para las páginas de gestión
+app.get('/ventas', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/ventas.html'));
+});
+
+app.get('/ventas/nueva', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/ventas.html'));
+});
+
+app.get('/pedidos', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/pedidos.html'));
+});
+
+app.get('/pedidos/nuevo', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/pedidos.html'));
+});
+
+app.get('/devoluciones', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/devoluciones.html'));
+});
+
+app.get('/devoluciones/nueva', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/devoluciones.html'));
+});
+
+// Rutas para RRHH
+app.get('/rrhh/turnos', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/rrhh.html'));
+});
+
+app.get('/rrhh/asistencias', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/rrhh.html'));
+});
+
+// Rutas para administración
+app.get('/admin/usuarios', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/admin.html'));
+});
+
+app.get('/admin/roles', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/admin.html'));
+});
+
 app.listen(PORT, () => {
   console.log(`Servidor escuchando en http://localhost:${PORT}`);
 });
