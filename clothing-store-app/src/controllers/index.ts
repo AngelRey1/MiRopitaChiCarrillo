@@ -39,10 +39,12 @@ import {
 import {
   getAllTurnos,
   getTurnosByUser as getTurnosByUserRepo,
+  getTurnoById as getTurnoByIdRepo,
   createTurno as createTurnoRepo,
   updateTurno as updateTurnoRepo,
   getAllAsistencias,
   getAsistenciasByUser as getAsistenciasByUserRepo,
+  getAsistenciaById as getAsistenciaByIdRepo,
   createAsistencia as createAsistenciaRepo,
   updateAsistencia as updateAsistenciaRepo
 } from './turnoRepository';
@@ -322,6 +324,20 @@ export async function updateTurno(req: Request, res: Response) {
   }
 }
 
+export async function getTurnoById(req: Request, res: Response) {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const turno = await getTurnoByIdRepo(id);
+    if (turno) {
+      res.json(turno);
+    } else {
+      res.status(404).json({ error: 'Turno no encontrado' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener turno', details: err });
+  }
+}
+
 // Controladores para asistencias
 export async function getAsistencias(req: Request, res: Response) {
   try {
@@ -362,6 +378,20 @@ export async function updateAsistencia(req: Request, res: Response) {
     }
   } catch (err) {
     res.status(500).json({ error: 'Error al actualizar asistencia', details: err });
+  }
+}
+
+export async function getAsistenciaById(req: Request, res: Response) {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const asistencia = await getAsistenciaByIdRepo(id);
+    if (asistencia) {
+      res.json(asistencia);
+    } else {
+      res.status(404).json({ error: 'Asistencia no encontrada' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener asistencia', details: err });
   }
 }
 
