@@ -5,10 +5,17 @@ export async function getAllSuppliers() {
   return rows;
 }
 
-export async function createSupplier(supplier: { nombre: string; ciudad: string }) {
+export async function createSupplier(supplier: { 
+  nombre: string; 
+  ciudad: string; 
+  telefono?: string | null;
+  email?: string | null;
+  direccion?: string | null;
+  contacto?: string | null;
+}) {
   const [result] = await pool.query(
-    'INSERT INTO proveedor (nombre, ciudad) VALUES (?, ?)',
-    [supplier.nombre, supplier.ciudad]
+    'INSERT INTO proveedor (nombre, ciudad, telefono, email, direccion, contacto) VALUES (?, ?, ?, ?, ?, ?)',
+    [supplier.nombre, supplier.ciudad, supplier.telefono, supplier.email, supplier.direccion, supplier.contacto]
   );
   
   // Obtener el proveedor recién creado
@@ -16,10 +23,17 @@ export async function createSupplier(supplier: { nombre: string; ciudad: string 
   return (rows as any[])[0];
 }
 
-export async function updateSupplier(id_proveedor: number, supplier: { nombre: string; ciudad: string }) {
+export async function updateSupplier(id_proveedor: number, supplier: { 
+  nombre: string; 
+  ciudad: string; 
+  telefono?: string | null;
+  email?: string | null;
+  direccion?: string | null;
+  contacto?: string | null;
+}) {
   await pool.query(
-    'UPDATE proveedor SET nombre = ?, ciudad = ? WHERE id_proveedor = ?',
-    [supplier.nombre, supplier.ciudad, id_proveedor]
+    'UPDATE proveedor SET nombre = ?, ciudad = ?, telefono = ?, email = ?, direccion = ?, contacto = ? WHERE id_proveedor = ?',
+    [supplier.nombre, supplier.ciudad, supplier.telefono, supplier.email, supplier.direccion, supplier.contacto, id_proveedor]
   );
   
   // Obtener el proveedor actualizado

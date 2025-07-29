@@ -54,6 +54,24 @@ app.get('/devoluciones/nueva', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/devoluciones.html'));
 });
 
+// Rutas para productos
+app.get('/productos', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/productos.html'));
+});
+
+app.get('/productos/nuevo', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/productos.html'));
+});
+
+// Rutas para proveedores
+app.get('/proveedores', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/proveedores.html'));
+});
+
+app.get('/proveedores/nuevo', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/proveedores.html'));
+});
+
 // Rutas para RRHH
 app.get('/rrhh/turnos', (req, res) => {
   res.sendFile(path.join(__dirname, '../public/rrhh.html'));
