@@ -1,20 +1,14 @@
-import mysql from 'mysql2/promise';
+import { pool } from '../config/database';
 import { Devolucion, DetalleDevolucion, CreateDevolucionRequest, UpdateDevolucionRequest } from '../types';
-
-const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'J4flores24',
-  database: 'myropitacarrillochi',
-  port: 3306,
-});
 
 // Obtener todas las devoluciones
 export async function getAllDevoluciones(): Promise<Devolucion[]> {
   const [rows] = await pool.query(`
-    SELECT d.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido
+    SELECT d.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido,
+           c.id_cliente, c.nombre_cliente, c.apellido_cliente
     FROM devoluciones d
     LEFT JOIN usuarios u ON d.usuario_id = u.id
+    LEFT JOIN cliente c ON d.cliente_id = c.id_cliente
     ORDER BY d.created_at DESC
   `);
   
@@ -29,7 +23,10 @@ export async function getAllDevoluciones(): Promise<Devolucion[]> {
     total_devolucion: row.total_devolucion,
     observaciones: row.observaciones,
     created_at: row.created_at,
-    cliente: undefined, // Por ahora no incluimos cliente
+    cliente: row.cliente_id ? {
+      nombre: row.nombre_cliente,
+      apellido: row.apellido_cliente
+    } : undefined,
     usuario: row.usuario_id ? {
       nombre: row.usuario_nombre,
       apellido: row.usuario_apellido
@@ -40,9 +37,11 @@ export async function getAllDevoluciones(): Promise<Devolucion[]> {
 // Obtener devoluciones por usuario
 export async function getDevolucionesByUser(userId: number): Promise<Devolucion[]> {
   const [rows] = await pool.query(`
-    SELECT d.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido
+    SELECT d.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido,
+           c.id_cliente, c.nombre_cliente, c.apellido_cliente
     FROM devoluciones d
     LEFT JOIN usuarios u ON d.usuario_id = u.id
+    LEFT JOIN cliente c ON d.cliente_id = c.id_cliente
     WHERE d.usuario_id = ?
     ORDER BY d.created_at DESC
   `, [userId]);
@@ -58,7 +57,10 @@ export async function getDevolucionesByUser(userId: number): Promise<Devolucion[
     total_devolucion: row.total_devolucion,
     observaciones: row.observaciones,
     created_at: row.created_at,
-    cliente: undefined, // Por ahora no incluimos cliente
+    cliente: row.cliente_id ? {
+      nombre: row.nombre_cliente,
+      apellido: row.apellido_cliente
+    } : undefined,
     usuario: row.usuario_id ? {
       nombre: row.usuario_nombre,
       apellido: row.usuario_apellido
@@ -69,9 +71,11 @@ export async function getDevolucionesByUser(userId: number): Promise<Devolucion[
 // Obtener devolución por ID
 export async function getDevolucionById(id: number): Promise<Devolucion | null> {
   const [rows] = await pool.query(`
-    SELECT d.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido
+    SELECT d.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido,
+           c.id_cliente, c.nombre_cliente, c.apellido_cliente
     FROM devoluciones d
     LEFT JOIN usuarios u ON d.usuario_id = u.id
+    LEFT JOIN cliente c ON d.cliente_id = c.id_cliente
     WHERE d.id = ?
   `, [id]);
   
@@ -89,7 +93,10 @@ export async function getDevolucionById(id: number): Promise<Devolucion | null> 
     total_devolucion: row.total_devolucion,
     observaciones: row.observaciones,
     created_at: row.created_at,
-    cliente: undefined, // Por ahora no incluimos cliente
+    cliente: row.cliente_id ? {
+      nombre: row.nombre_cliente,
+      apellido: row.apellido_cliente
+    } : undefined,
     usuario: row.usuario_id ? {
       nombre: row.usuario_nombre,
       apellido: row.usuario_apellido
@@ -186,10 +193,10 @@ export async function getDetallesDevolucion(devolucionId: number): Promise<Detal
 export async function getDevolucionesByVenta(ventaId: number): Promise<Devolucion[]> {
   const [rows] = await pool.query(`
     SELECT d.*, 
-           c.nombre as cliente_nombre, c.apellido as cliente_apellido,
+           c.nombre_cliente as cliente_nombre, c.apellido_cliente as cliente_apellido,
            u.nombre as usuario_nombre, u.apellido as usuario_apellido
     FROM devoluciones d
-    LEFT JOIN cliente c ON d.cliente_id = c.id
+    LEFT JOIN cliente c ON d.cliente_id = c.id_cliente
     LEFT JOIN usuarios u ON d.usuario_id = u.id
     WHERE d.venta_id = ?
     ORDER BY d.fecha_devolucion DESC

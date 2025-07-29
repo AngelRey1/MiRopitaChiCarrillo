@@ -1,13 +1,5 @@
-import mysql from 'mysql2/promise';
+import { pool } from '../config/database';
 import { Turno, Asistencia } from '../types';
-
-const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'J4flores24',
-  database: 'myropitacarrillochi',
-  port: 3306,
-});
 
 // Funciones para Turnos
 export async function getAllTurnos(): Promise<Turno[]> {

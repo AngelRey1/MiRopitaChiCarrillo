@@ -1,15 +1,7 @@
-import mysql from 'mysql2/promise';
+import { pool } from '../config/database';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { User, Role, UserWithRoles, LoginRequest, AuthResponse } from '../types';
-
-const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'J4flores24',
-  database: 'myropitacarrillochi',
-  port: 3306,
-});
 
 const JWT_SECRET = process.env.JWT_SECRET || 'miropita-secret-key-2024';
 

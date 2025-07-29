@@ -1,12 +1,4 @@
-import mysql from 'mysql2/promise';
-
-const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'J4flores24',
-  database: 'myropitacarrillochi',
-  port: 3306,
-});
+import { pool } from '../config/database';
 
 export async function crearVenta({ id_cliente, productos }: { id_cliente?: number, productos: Array<{ id_producto: number, cantidad: number, precio_en_venta: number }> }) {
   const connection = await pool.getConnection();

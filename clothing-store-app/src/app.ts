@@ -2,10 +2,10 @@ import express from 'express';
 import routes from './routes';
 import path from 'path';
 import cors from 'cors';
-import { testConnection } from './controllers/itemRepository';
+import { testConnection } from './config/database';
 
 const app = express();
-const PORT = 4000;
+const PORT = process.env.PORT || 4000;
 
 app.use(cors());
 app.use(express.json());

@@ -1,22 +1,14 @@
-import mysql from 'mysql2/promise';
-
-const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'J4flores24',
-  database: 'myropitacarrillochi',
-  port: 3306,
-});
+import { pool } from '../config/database';
 
 export async function getAllClients() {
   const [rows] = await pool.query('SELECT * FROM cliente');
   return rows;
 }
 
-export async function createClient(client: { nombres: string; apellidos: string }) {
+export async function createClient(client: { nombre_cliente: string; apellido_cliente: string }) {
   const [result] = await pool.query(
-    'INSERT INTO cliente (nombres, apellidos) VALUES (?, ?)',
-    [client.nombres, client.apellidos]
+    'INSERT INTO cliente (nombre_cliente, apellido_cliente) VALUES (?, ?)',
+    [client.nombre_cliente, client.apellido_cliente]
   );
   
   // Obtener el cliente recién creado
@@ -24,10 +16,10 @@ export async function createClient(client: { nombres: string; apellidos: string 
   return (rows as any[])[0];
 }
 
-export async function updateClient(id_cliente: number, client: { nombres: string; apellidos: string }) {
+export async function updateClient(id_cliente: number, client: { nombre_cliente: string; apellido_cliente: string }) {
   await pool.query(
-    'UPDATE cliente SET nombres = ?, apellidos = ? WHERE id_cliente = ?',
-    [client.nombres, client.apellidos, id_cliente]
+    'UPDATE cliente SET nombre_cliente = ?, apellido_cliente = ? WHERE id_cliente = ?',
+    [client.nombre_cliente, client.apellido_cliente, id_cliente]
   );
   
   // Obtener el cliente actualizado

@@ -1,13 +1,5 @@
-import mysql from 'mysql2/promise';
+import { pool } from '../config/database';
 import { Pedido, DetallePedido, CreatePedidoRequest, UpdatePedidoRequest } from '../types';
-
-const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'J4flores24',
-  database: 'myropitacarrillochi',
-  port: 3306,
-});
 
 // Obtener todos los pedidos
 export async function getAllPedidos(): Promise<Pedido[]> {
@@ -161,7 +153,7 @@ export async function getDetallesPedido(pedidoId: number): Promise<DetallePedido
   const [rows] = await pool.query(`
     SELECT dp.*, p.nombre as producto_nombre, p.descripcion as producto_descripcion
     FROM detalles_pedidos dp
-    LEFT JOIN producto p ON dp.producto_id = p.id
+    LEFT JOIN producto p ON dp.producto_id = p.id_producto
     WHERE dp.pedido_id = ?
   `, [pedidoId]);
   

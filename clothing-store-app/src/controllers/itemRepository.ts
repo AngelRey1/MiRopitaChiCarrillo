@@ -1,12 +1,4 @@
-import mysql from 'mysql2/promise';
-
-const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'J4flores24',
-  database: 'myropitacarrillochi',
-  port: 3306,
-});
+import { pool } from '../config/database';
 
 export async function getAllProducts() {
   const [rows] = await pool.query('SELECT * FROM producto');
@@ -82,13 +74,4 @@ export async function deleteProduct(id_producto: number) {
     return (rows as any[])[0];
   }
   return null;
-}
-
-export async function testConnection() {
-  try {
-    const [rows] = await pool.query('SELECT 1 as test');
-    console.log('Conexión exitosa a MySQL:', rows);
-  } catch (error) {
-    console.error('Error al conectar a MySQL:', error);
-  }
 }

@@ -1,20 +1,14 @@
-import mysql from 'mysql2/promise';
+import { pool } from '../config/database';
 import { Venta, DetalleVenta, CreateVentaRequest, UpdateVentaRequest } from '../types';
-
-const pool = mysql.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'J4flores24',
-  database: 'myropitacarrillochi',
-  port: 3306,
-});
 
 // Obtener todas las ventas
 export async function getAllVentas(): Promise<Venta[]> {
   const [rows] = await pool.query(`
-    SELECT v.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido
+    SELECT v.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido,
+           c.id_cliente, c.nombre_cliente, c.apellido_cliente
     FROM ventas v
     LEFT JOIN usuarios u ON v.usuario_id = u.id
+    LEFT JOIN cliente c ON v.cliente_id = c.id_cliente
     ORDER BY v.created_at DESC
   `);
   
@@ -28,7 +22,11 @@ export async function getAllVentas(): Promise<Venta[]> {
     estado: row.estado,
     observaciones: row.observaciones,
     created_at: row.created_at,
-    cliente: undefined, // Por ahora no incluimos cliente
+    cliente: row.cliente_id ? {
+      nombre: row.nombre_cliente,
+      apellido: row.apellido_cliente,
+      email: '' // No hay email en la tabla cliente
+    } : undefined,
     usuario: row.usuario_id ? {
       nombre: row.usuario_nombre,
       apellido: row.usuario_apellido
@@ -39,9 +37,11 @@ export async function getAllVentas(): Promise<Venta[]> {
 // Obtener ventas por usuario
 export async function getVentasByUser(userId: number): Promise<Venta[]> {
   const [rows] = await pool.query(`
-    SELECT v.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido
+    SELECT v.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido,
+           c.id_cliente, c.nombre_cliente, c.apellido_cliente
     FROM ventas v
     LEFT JOIN usuarios u ON v.usuario_id = u.id
+    LEFT JOIN cliente c ON v.cliente_id = c.id_cliente
     WHERE v.usuario_id = ?
     ORDER BY v.created_at DESC
   `, [userId]);
@@ -56,7 +56,11 @@ export async function getVentasByUser(userId: number): Promise<Venta[]> {
     estado: row.estado,
     observaciones: row.observaciones,
     created_at: row.created_at,
-    cliente: undefined, // Por ahora no incluimos cliente
+    cliente: row.cliente_id ? {
+      nombre: row.nombre_cliente,
+      apellido: row.apellido_cliente,
+      email: '' // No hay email en la tabla cliente
+    } : undefined,
     usuario: row.usuario_id ? {
       nombre: row.usuario_nombre,
       apellido: row.usuario_apellido
@@ -67,9 +71,11 @@ export async function getVentasByUser(userId: number): Promise<Venta[]> {
 // Obtener venta por ID
 export async function getVentaById(id: number): Promise<Venta | null> {
   const [rows] = await pool.query(`
-    SELECT v.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido
+    SELECT v.*, u.nombre as usuario_nombre, u.apellido as usuario_apellido,
+           c.id_cliente, c.nombre_cliente, c.apellido_cliente
     FROM ventas v
     LEFT JOIN usuarios u ON v.usuario_id = u.id
+    LEFT JOIN cliente c ON v.cliente_id = c.id_cliente
     WHERE v.id = ?
   `, [id]);
   
@@ -86,7 +92,11 @@ export async function getVentaById(id: number): Promise<Venta | null> {
     estado: row.estado,
     observaciones: row.observaciones,
     created_at: row.created_at,
-    cliente: undefined, // Por ahora no incluimos cliente
+    cliente: row.cliente_id ? {
+      nombre: row.nombre_cliente,
+      apellido: row.apellido_cliente,
+      email: '' // No hay email en la tabla cliente
+    } : undefined,
     usuario: row.usuario_id ? {
       nombre: row.usuario_nombre,
       apellido: row.usuario_apellido

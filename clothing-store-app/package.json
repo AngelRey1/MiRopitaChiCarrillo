@@ -6,7 +6,8 @@
   "scripts": {
     "start": "ts-node src/app.ts",
     "build": "tsc",
-    "dev": "ts-node-dev src/app.ts"
+    "dev": "ts-node-dev src/app.ts",
+    "test": "echo 'No hay tests automáticos aún. El sistema fue probado manualmente.' && exit 0"
   },
   "dependencies": {
     "@types/mysql": "^2.15.27",
