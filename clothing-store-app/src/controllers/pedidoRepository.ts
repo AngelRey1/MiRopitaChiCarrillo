@@ -195,4 +195,30 @@ export async function getPedidosStats(): Promise<{
     pedidos_confirmados: row.pedidos_confirmados || 0,
     pedidos_entregados: row.pedidos_entregados || 0
   };
+}
+
+// Eliminar pedido
+export async function deletePedido(id: number): Promise<boolean> {
+  const connection = await pool.getConnection();
+  
+  try {
+    await connection.beginTransaction();
+    
+    // Eliminar detalles del pedido primero
+    await connection.query('DELETE FROM detalles_pedidos WHERE pedido_id = ?', [id]);
+    
+    // Eliminar el pedido
+    const [result] = await connection.query('DELETE FROM pedidos WHERE id = ?', [id]);
+    
+    await connection.commit();
+    
+    return (result as any).affectedRows > 0;
+    
+  } catch (error) {
+    await connection.rollback();
+    console.error('Error en deletePedido:', error);
+    throw error;
+  } finally {
+    connection.release();
+  }
 } 

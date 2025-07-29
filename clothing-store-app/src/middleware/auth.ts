@@ -36,21 +36,28 @@ export function authenticateToken(req: Request, res: Response, next: NextFunctio
 export function requirePermission(permission: string) {
   return (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
+      console.log('❌ Usuario no autenticado');
       return res.status(401).json({ error: 'Usuario no autenticado' });
     }
 
-    // Convertir roles de string a objetos Role para usar hasPermission
-    const userRoles: Role[] = req.user.roles.map(roleName => ({
-      id: 0, // No necesitamos el ID para la verificación
-      nombre: roleName,
-      descripcion: '',
-      permisos: getPermissionsForRole(roleName)
-    }));
+    console.log('🔍 Verificando permiso:', permission);
+    console.log('🔍 Roles del usuario:', req.user.roles);
 
-    if (!hasPermission(userRoles, permission)) {
+    // Verificar si el usuario tiene el permiso requerido
+    const hasRequiredPermission = req.user.roles.some(roleName => {
+      const rolePermissions = getPermissionsForRole(roleName);
+      console.log(`🔍 Rol: ${roleName}, Permisos:`, rolePermissions);
+      return rolePermissions.includes('*') || rolePermissions.includes(permission);
+    });
+
+    console.log('🔍 Tiene permiso requerido:', hasRequiredPermission);
+
+    if (!hasRequiredPermission) {
+      console.log('❌ Permiso insuficiente');
       return res.status(403).json({ error: 'Permiso insuficiente' });
     }
 
+    console.log('✅ Permiso verificado correctamente');
     next();
   };
 }

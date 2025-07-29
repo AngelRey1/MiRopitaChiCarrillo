@@ -6,6 +6,7 @@ import {
   getPedidoById,
   createPedido,
   updatePedido,
+  deletePedido,
   getDetallesPedido,
   getPedidosStats
 } from '../controllers/pedidoRepository';
@@ -71,6 +72,21 @@ router.put('/:id', authenticateToken, requireInventarioPermission, async (req, r
     }
   } catch (err) {
     res.status(500).json({ error: 'Error al actualizar pedido', details: err });
+  }
+});
+
+// Eliminar pedido
+router.delete('/:id', authenticateToken, requireInventarioPermission, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    const deleted = await deletePedido(id);
+    if (deleted) {
+      res.json({ message: 'Pedido eliminado exitosamente' });
+    } else {
+      res.status(404).json({ error: 'Pedido no encontrado' });
+    }
+  } catch (err) {
+    res.status(500).json({ error: 'Error al eliminar pedido', details: err });
   }
 });
 
