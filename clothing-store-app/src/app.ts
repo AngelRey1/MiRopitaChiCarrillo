@@ -130,6 +130,20 @@ app.get('/proveedores/nuevo', (req, res) => {
 });
 
 // =====================================================
+// RUTAS PARA GESTIÓN DE CLIENTES
+// =====================================================
+
+// Página principal de clientes
+app.get('/clientes', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/clientes.html'));
+});
+
+// Página para crear nuevo cliente
+app.get('/clientes/nuevo', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/clientes-nuevo.html'));
+});
+
+// =====================================================
 // RUTAS PARA RECURSOS HUMANOS (RRHH)
 // =====================================================
 

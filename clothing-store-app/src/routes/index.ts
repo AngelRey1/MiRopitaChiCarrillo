@@ -19,6 +19,7 @@ import {
   putProduct,            // Actualizar producto
   deleteProductById,     // Eliminar producto
   getClients,            // Obtener todos los clientes
+  getClient,             // Obtener cliente por ID
   postClient,            // Crear nuevo cliente
   putClient,             // Actualizar cliente
   deleteClientById,      // Eliminar cliente
@@ -60,25 +61,30 @@ import {
 const router = Router();
 
 // =====================================================
-// RUTAS PÚBLICAS (SIN AUTENTICACIÓN)
-// =====================================================
-
-// Ruta para obtener clientes (temporalmente pública para desarrollo)
-// GET /api/clientes
-router.get('/clientes', getClients);
-
-// =====================================================
 // RUTAS PROTEGIDAS CON AUTENTICACIÓN
 // =====================================================
 
-// Rutas para gestión de clientes (requieren permisos de ventas)
-// POST /api/clientes - Crear nuevo cliente
+/**
+ * RUTAS DE GESTIÓN DE CLIENTES
+ * 
+ * Base de datos: Tabla 'cliente'
+ * - Campos: id_cliente, nombre_cliente, apellido_cliente, telefono
+ * - Campos de dirección: calle, cruzado, colonia, codigo_postal, municipio, estado
+ * - Campo especial: frecuente (boolean)
+ * 
+ * Funciones:
+ * - GET /api/clientes: Obtiene todos los clientes para listar en la interfaz
+ * - GET /api/clientes/:id: Obtiene un cliente específico por ID
+ * - POST /api/clientes: Crea un nuevo cliente con datos completos
+ * - PUT /api/clientes/:id: Actualiza datos de un cliente existente
+ * - DELETE /api/clientes/:id: Elimina un cliente (verifica existencia primero)
+ * 
+ * Permisos: Requiere autenticación y permisos de ventas
+ */
+router.get('/clientes', authenticateToken, requireVentasPermission, getClients);
+router.get('/clientes/:id', authenticateToken, requireVentasPermission, getClient);
 router.post('/clientes', authenticateToken, requireVentasPermission, postClient);
-
-// PUT /api/clientes/:id - Actualizar cliente existente
 router.put('/clientes/:id', authenticateToken, requireVentasPermission, putClient);
-
-// DELETE /api/clientes/:id - Eliminar cliente
 router.delete('/clientes/:id', authenticateToken, requireVentasPermission, deleteClientById);
 
 // =====================================================

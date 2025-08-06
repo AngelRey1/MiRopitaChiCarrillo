@@ -23,6 +23,7 @@ import {
 // Importar funciones del repositorio de clientes
 import {
   getAllClients,       // Obtener todos los clientes
+  getClientById,       // Obtener cliente por ID
   createClient,        // Crear nuevo cliente
   updateClient,        // Actualizar cliente existente
   deleteClient         // Eliminar cliente
@@ -187,18 +188,74 @@ export async function deleteProductById(req: Request, res: Response) {
 //   }
 // }
 
-// Controladores existentes para clientes
+/**
+ * CONTROLADORES PARA GESTIÓN DE CLIENTES
+ * 
+ * Base de datos: Tabla 'cliente'
+ * - Campos principales: id_cliente, nombre_cliente, apellido_cliente, telefono
+ * - Campos de dirección: calle, cruzado, colonia, codigo_postal, municipio, estado
+ * - Campo especial: frecuente (boolean para clientes frecuentes)
+ * 
+ * Funciones CRUD completas para gestión de clientes
+ */
+
+/**
+ * GET /api/clientes
+ * Obtiene todos los clientes de la base de datos
+ * - Consulta: SELECT * FROM cliente
+ * - Retorna: Array con todos los clientes
+ * - Uso: Para mostrar lista de clientes en el frontend
+ */
 export async function getClients(req: Request, res: Response) {
   const clients = await getAllClients();
   res.json(clients);
 }
 
+/**
+ * GET /api/clientes/:id
+ * Obtiene un cliente específico por su ID
+ * - Parámetros: ID del cliente en la URL
+ * - Consulta: SELECT * FROM cliente WHERE id_cliente = ?
+ * - Retorna: Cliente específico o error 404
+ * - Uso: Para obtener datos de un cliente para edición o detalles
+ */
+export async function getClient(req: Request, res: Response) {
+  try {
+    const id_cliente = parseInt(req.params.id, 10);
+    const client = await getClientById(id_cliente);
+    
+    if (client) {
+      res.json(client);
+    } else {
+      res.status(404).json({ error: 'Cliente no encontrado' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener cliente' });
+  }
+}
+
+/**
+ * POST /api/clientes
+ * Crea un nuevo cliente en la base de datos
+ * - Parámetros: nombre_cliente, apellido_cliente, telefono, dirección completa
+ * - Consulta: INSERT INTO cliente (...)
+ * - Retorna: Cliente recién creado con ID
+ * - Uso: Formulario de nuevo cliente
+ */
 export async function postClient(req: Request, res: Response) {
   const client = req.body;
   const newClient = await createClient(client);
   res.status(201).json(newClient);
 }
 
+/**
+ * PUT /api/clientes/:id
+ * Actualiza un cliente existente en la base de datos
+ * - Parámetros: ID del cliente + datos actualizados
+ * - Consulta: UPDATE cliente SET ... WHERE id_cliente = ?
+ * - Retorna: Cliente actualizado o error 404
+ * - Uso: Formulario de edición de cliente
+ */
 export async function putClient(req: Request, res: Response) {
   const id_cliente = parseInt(req.params.id, 10);
   const client = req.body;
@@ -210,6 +267,14 @@ export async function putClient(req: Request, res: Response) {
   }
 }
 
+/**
+ * DELETE /api/clientes/:id
+ * Elimina un cliente de la base de datos
+ * - Parámetros: ID del cliente a eliminar
+ * - Consulta: DELETE FROM cliente WHERE id_cliente = ?
+ * - Retorna: Cliente eliminado o error 404
+ * - Uso: Botón eliminar en lista de clientes
+ */
 export async function deleteClientById(req: Request, res: Response) {
   const id_cliente = parseInt(req.params.id, 10);
   const deletedClient = await deleteClient(id_cliente);

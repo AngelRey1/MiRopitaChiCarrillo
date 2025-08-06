@@ -394,6 +394,9 @@
         <button class="tab" onclick="showTab('suppliers')">
           <i class="fas fa-truck tab-icon"></i> Proveedores
         </button>
+        <button class="tab" onclick="showTab('sales')">
+          <i class="fas fa-shopping-cart tab-icon"></i> Ventas
+        </button>
       </div>
 
       <!-- Contenido de Productos -->
@@ -569,6 +572,60 @@
             <div id="suppliersContainer">
               <div class="loading">
                 <i class="fas fa-spinner fa-spin"></i> Cargando proveedores...
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Contenido de Ventas -->
+        <div id="sales-tab" class="tab-content">
+          <!-- Formulario de Venta -->
+          <div class="form-section">
+            <h2><i class="fas fa-shopping-cart"></i> Crear Nueva Venta</h2>
+            <form id="saleForm">
+              <div class="form-grid">
+                <div class="form-group">
+                  <label for="saleCliente">Cliente</label>
+                  <select id="saleCliente" required>
+                    <option value="">Seleccionar cliente</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="saleProducto">Producto</label>
+                  <select id="saleProducto" required>
+                    <option value="">Seleccionar producto</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="saleCantidad">Cantidad</label>
+                  <input type="number" id="saleCantidad" min="1" required>
+                </div>
+                <div class="form-group">
+                  <label for="saleMetodoPago">Método de Pago</label>
+                  <select id="saleMetodoPago" required>
+                    <option value="">Seleccionar método</option>
+                    <option value="efectivo">Efectivo</option>
+                    <option value="tarjeta">Tarjeta</option>
+                    <option value="transferencia">Transferencia</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label for="saleObservaciones">Observaciones</label>
+                  <textarea id="saleObservaciones" rows="3" placeholder="Observaciones adicionales..."></textarea>
+                </div>
+              </div>
+              <button type="submit" class="btn">
+                <i class="fas fa-save"></i> Crear Venta
+              </button>
+            </form>
+          </div>
+
+          <!-- Lista de Ventas -->
+          <div class="form-section">
+            <h2><i class="fas fa-list"></i> Historial de Ventas</h2>
+            <div id="salesContainer">
+              <div class="loading">
+                <i class="fas fa-spinner fa-spin"></i> Cargando ventas...
               </div>
             </div>
           </div>
@@ -904,6 +961,10 @@
         loadClients();
       } else if (tabName === 'suppliers') {
         loadSuppliers();
+      } else if (tabName === 'sales') {
+        loadSales();
+        loadClientsForSale();
+        loadProductsForSale();
       }
     }
 
@@ -1359,6 +1420,180 @@
       await addSupplier(supplierData);
     });
 
+    // Elementos del DOM para ventas
+    const saleForm = document.getElementById('saleForm');
+    const salesContainer = document.getElementById('salesContainer');
+
+    // Función para cargar ventas
+    async function loadSales() {
+      try {
+        const response = await fetch('/api/ventas');
+        const sales = await response.json();
+        displaySales(sales);
+      } catch (error) {
+        console.error('Error cargando ventas:', error);
+        salesContainer.innerHTML = '<div class="error">Error al cargar las ventas</div>';
+      }
+    }
+
+    // Función para mostrar ventas
+    function displaySales(sales) {
+      if (sales.length === 0) {
+        salesContainer.innerHTML = '<div class="loading">No hay ventas registradas</div>';
+        return;
+      }
+
+      const salesHTML = sales.map(sale => `
+        <div class="product-card">
+          <div class="product-header">
+            <div>
+              <div class="product-name">Venta #${sale.id_venta}</div>
+              <div class="product-model">
+                <i class="fas fa-calendar"></i> ${new Date(sale.fecha_venta).toLocaleDateString()}
+              </div>
+            </div>
+            <div style="text-align: right;">
+              <span style="font-size: 1.5em; font-weight: bold; color: #27ae60;">$${parseFloat(sale.total).toFixed(2)}</span>
+              <br><span style="color: #7f8c8d; font-size: 0.8em;">${sale.metodo_pago}</span>
+            </div>
+          </div>
+          <div class="product-details">
+            <div class="product-detail">
+              <span class="detail-label">Cliente:</span>
+              <span class="detail-value">${sale.cliente_nombre || 'N/A'}</span>
+            </div>
+            <div class="product-detail">
+              <span class="detail-label">Estado:</span>
+              <span class="detail-value" style="color: ${sale.estado === 'completada' ? '#27ae60' : '#f39c12'}">
+                ${sale.estado}
+              </span>
+            </div>
+            <div class="product-detail">
+              <span class="detail-label">Observaciones:</span>
+              <span class="detail-value">${sale.observaciones || 'Sin observaciones'}</span>
+            </div>
+          </div>
+          <div class="product-actions">
+            <button class="btn btn-warning btn-small" onclick="viewSaleDetails(${sale.id_venta})">
+              <i class="fas fa-eye"></i> Ver Detalles
+            </button>
+          </div>
+        </div>
+      `).join('');
+
+      salesContainer.innerHTML = salesHTML;
+    }
+
+    // Función para cargar clientes en el select de ventas
+    async function loadClientsForSale() {
+      try {
+        const response = await fetch('/api/clientes');
+        const clients = await response.json();
+        const clientSelect = document.getElementById('saleCliente');
+        
+        clientSelect.innerHTML = '<option value="">Seleccionar cliente</option>';
+        clients.forEach(client => {
+          clientSelect.innerHTML += `<option value="${client.id_cliente}">${client.nombre_cliente} ${client.apellido_cliente}</option>`;
+        });
+      } catch (error) {
+        console.error('Error cargando clientes para venta:', error);
+      }
+    }
+
+    // Función para cargar productos en el select de ventas
+    async function loadProductsForSale() {
+      try {
+        const response = await fetch('/api/productos');
+        const products = await response.json();
+        const productSelect = document.getElementById('saleProducto');
+        
+        productSelect.innerHTML = '<option value="">Seleccionar producto</option>';
+        products.forEach(product => {
+          productSelect.innerHTML += `<option value="${product.id_producto}" data-price="${product.precio}">${product.nombre} - ${product.talla} ($${product.precio})</option>`;
+        });
+      } catch (error) {
+        console.error('Error cargando productos para venta:', error);
+      }
+    }
+
+    // Función para crear venta
+    async function createSale(saleData) {
+      try {
+        const response = await fetch('/api/ventas', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(saleData)
+        });
+
+        if (response.ok) {
+          showMessage('Venta creada exitosamente');
+          saleForm.reset();
+          loadSales();
+        } else {
+          const error = await response.json();
+          showMessage(`Error: ${error.error || 'Error al crear venta'}`, 'error');
+        }
+      } catch (error) {
+        showMessage('Error de conexión', 'error');
+      }
+    }
+
+    // Función para ver detalles de venta
+    async function viewSaleDetails(id) {
+      try {
+        const response = await fetch(`/api/ventas/${id}/detalles`);
+        const saleDetails = await response.json();
+        
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.style.display = 'block';
+        
+        modal.innerHTML = `
+          <div class="modal-content">
+            <div class="modal-header">
+              <h2 class="modal-title">Detalles de Venta #${id}</h2>
+              <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div class="modal-form">
+              <h3>Productos Vendidos:</h3>
+              ${saleDetails.detalles ? saleDetails.detalles.map(detail => `
+                <div style="border: 1px solid #e9ecef; padding: 10px; margin: 10px 0; border-radius: 5px;">
+                  <strong>${detail.producto_nombre}</strong><br>
+                  Cantidad: ${detail.cantidad} | Precio: $${detail.precio_unitario} | Subtotal: $${detail.subtotal}
+                </div>
+              `).join('') : '<p>No hay detalles disponibles</p>'}
+            </div>
+            <div class="modal-actions">
+              <button type="button" class="btn btn-secondary" onclick="closeModal()">Cerrar</button>
+            </div>
+          </div>
+        `;
+        
+        document.body.appendChild(modal);
+        
+      } catch (error) {
+        console.error('Error cargando detalles de venta:', error);
+        showMessage('Error al cargar los detalles de la venta', 'error');
+      }
+    }
+
+    // Event listener para formulario de ventas
+    saleForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const saleData = {
+        cliente_id: parseInt(document.getElementById('saleCliente').value),
+        producto_id: parseInt(document.getElementById('saleProducto').value),
+        cantidad: parseInt(document.getElementById('saleCantidad').value),
+        metodo_pago: document.getElementById('saleMetodoPago').value,
+        observaciones: document.getElementById('saleObservaciones').value
+      };
+
+      await createSale(saleData);
+    });
+
     // Hacer funciones globales para los botones
     window.deleteProduct = deleteProduct;
     window.editProduct = editProduct;
@@ -1368,6 +1603,7 @@
     window.editSupplier = editSupplier;
     window.closeModal = closeModal;
     window.showTab = showTab;
+    window.viewSaleDetails = viewSaleDetails;
   </script>
 </body>
 </html>
