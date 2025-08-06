@@ -1,102 +1,156 @@
+// =====================================================
+// ARCHIVO: index.ts
+// DESCRIPCIÓN: Controlador principal que maneja todas las operaciones CRUD
+// FUNCIÓN: Coordina las peticiones HTTP con los repositorios de datos
+// =====================================================
+
+// Importaciones necesarias para Express
 import { Request, Response } from 'express';
+
+// =====================================================
+// IMPORTACIONES DE REPOSITORIOS
+// =====================================================
+
+// Importar funciones del repositorio de productos
 import {
-  getAllProducts,
-  getProductById,
-  createProduct,
-  updateProduct,
-  deleteProduct
+  getAllProducts,      // Obtener todos los productos
+  getProductById,      // Obtener producto por ID
+  createProduct,       // Crear nuevo producto
+  updateProduct,       // Actualizar producto existente
+  deleteProduct        // Eliminar producto
 } from './itemRepository';
-// import {
-//   getVentas,
-//   getVentaById,
-//   crearVenta
-// } from './salesRepository'; // Comentado - usando nuevas rutas de ventas
+
+// Importar funciones del repositorio de clientes
 import {
-  getAllClients,
-  createClient,
-  updateClient,
-  deleteClient
+  getAllClients,       // Obtener todos los clientes
+  createClient,        // Crear nuevo cliente
+  updateClient,        // Actualizar cliente existente
+  deleteClient         // Eliminar cliente
 } from './clientRepository';
+
+// Importar funciones del repositorio de proveedores
 import {
-  getAllSuppliers,
-  createSupplier,
-  updateSupplier,
-  deleteSupplier
+  getAllSuppliers,     // Obtener todos los proveedores
+  createSupplier,      // Crear nuevo proveedor
+  updateSupplier,      // Actualizar proveedor existente
+  deleteSupplier       // Eliminar proveedor
 } from './supplierRepository';
+
+// Importar funciones del repositorio de usuarios y autenticación
 import {
-  authenticateUser,
-  getAllUsers,
-  getUserById,
-  getAllRoles,
-  assignRoleToUser,
-  removeRoleFromUser,
-  updateUserStatus,
-  createUserInRepo,
-  updateUserInRepo,
-  createRoleInRepo,
-  updateRoleInRepo
+  authenticateUser,    // Autenticar usuario (login)
+  getAllUsers,         // Obtener todos los usuarios
+  getUserById,         // Obtener usuario por ID
+  getAllRoles,         // Obtener todos los roles
+  assignRoleToUser,    // Asignar rol a usuario
+  removeRoleFromUser,  // Remover rol de usuario
+  updateUserStatus,    // Actualizar estado de usuario
+  createUserInRepo,    // Crear nuevo usuario
+  updateUserInRepo,    // Actualizar usuario existente
+  createRoleInRepo,    // Crear nuevo rol
+  updateRoleInRepo     // Actualizar rol existente
 } from './userRepository';
+
+// Importar funciones del repositorio de turnos y asistencias
 import {
-  getAllTurnos,
-  getTurnosByUser as getTurnosByUserRepo,
-  getTurnoById as getTurnoByIdRepo,
-  createTurno as createTurnoRepo,
-  updateTurno as updateTurnoRepo,
-  getAllAsistencias,
-  getAsistenciasByUser as getAsistenciasByUserRepo,
-  getAsistenciaById as getAsistenciaByIdRepo,
-  createAsistencia as createAsistenciaRepo,
-  updateAsistencia as updateAsistenciaRepo
+  getAllTurnos,        // Obtener todos los turnos
+  getTurnosByUser as getTurnosByUserRepo,      // Obtener turnos por usuario
+  getTurnoById as getTurnoByIdRepo,            // Obtener turno por ID
+  createTurno as createTurnoRepo,              // Crear nuevo turno
+  updateTurno as updateTurnoRepo,              // Actualizar turno existente
+  getAllAsistencias,   // Obtener todas las asistencias
+  getAsistenciasByUser as getAsistenciasByUserRepo, // Obtener asistencias por usuario
+  getAsistenciaById as getAsistenciaByIdRepo,  // Obtener asistencia por ID
+  createAsistencia as createAsistenciaRepo,    // Crear nueva asistencia
+  updateAsistencia as updateAsistenciaRepo     // Actualizar asistencia existente
 } from './turnoRepository';
+
+// Importar funciones del repositorio de pedidos
 import {
-  getAllPedidos,
-  getPedidosByUser as getPedidosByUserRepo,
-  getPedidoById as getPedidoByIdRepo,
-  createPedido as createPedidoRepo,
-  updatePedido as updatePedidoRepo,
-  getDetallesPedido as getDetallesPedidoRepo
+  getAllPedidos,       // Obtener todos los pedidos
+  getPedidosByUser as getPedidosByUserRepo,    // Obtener pedidos por usuario
+  getPedidoById as getPedidoByIdRepo,          // Obtener pedido por ID
+  createPedido as createPedidoRepo,            // Crear nuevo pedido
+  updatePedido as updatePedidoRepo,            // Actualizar pedido existente
+  getDetallesPedido as getDetallesPedidoRepo   // Obtener detalles de pedido
 } from './pedidoRepository';
 
-// Controladores existentes para productos
+// =====================================================
+// CONTROLADORES PARA PRODUCTOS
+// =====================================================
+
+// Controlador para obtener todos los productos
+// GET /api/productos
 export async function getProducts(req: Request, res: Response) {
-  const products = await getAllProducts();
-  res.json(products);
+  try {
+    const products = await getAllProducts();
+    res.json(products);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener productos' });
+  }
 }
 
+// Controlador para obtener un producto específico por ID
+// GET /api/productos/:id
 export async function getProduct(req: Request, res: Response) {
-  const id_producto = parseInt(req.params.id, 10);
-  const product = await getProductById(id_producto);
-  if (product) {
-    res.json(product);
-  } else {
-    res.status(404).json({ error: 'Producto no encontrado' });
+  try {
+    const id_producto = parseInt(req.params.id, 10);
+    const product = await getProductById(id_producto);
+    
+    if (product) {
+      res.json(product);
+    } else {
+      res.status(404).json({ error: 'Producto no encontrado' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Error al obtener producto' });
   }
 }
 
+// Controlador para crear un nuevo producto
+// POST /api/productos
 export async function postProduct(req: Request, res: Response) {
-  const producto = req.body;
-  const newProduct = await createProduct(producto);
-  res.status(201).json(newProduct);
-}
-
-export async function putProduct(req: Request, res: Response) {
-  const id_producto = parseInt(req.params.id, 10);
-  const producto = req.body;
-  const updatedProduct = await updateProduct(id_producto, producto);
-  if (updatedProduct) {
-    res.json(updatedProduct);
-  } else {
-    res.status(404).json({ error: 'Producto no encontrado' });
+  try {
+    const producto = req.body;
+    const newProduct = await createProduct(producto);
+    res.status(201).json(newProduct);
+  } catch (error) {
+    res.status(500).json({ error: 'Error al crear producto' });
   }
 }
 
+// Controlador para actualizar un producto existente
+// PUT /api/productos/:id
+export async function putProduct(req: Request, res: Response) {
+  try {
+    const id_producto = parseInt(req.params.id, 10);
+    const producto = req.body;
+    const updatedProduct = await updateProduct(id_producto, producto);
+    
+    if (updatedProduct) {
+      res.json(updatedProduct);
+    } else {
+      res.status(404).json({ error: 'Producto no encontrado' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Error al actualizar producto' });
+  }
+}
+
+// Controlador para eliminar un producto
+// DELETE /api/productos/:id
 export async function deleteProductById(req: Request, res: Response) {
-  const id_producto = parseInt(req.params.id, 10);
-  const deletedProduct = await deleteProduct(id_producto);
-  if (deletedProduct) {
-    res.json({ message: 'Producto eliminado', deletedProduct });
-  } else {
-    res.status(404).json({ error: 'Producto no encontrado' });
+  try {
+    const id_producto = parseInt(req.params.id, 10);
+    const deletedProduct = await deleteProduct(id_producto);
+    
+    if (deletedProduct) {
+      res.json({ message: 'Producto eliminado', deletedProduct });
+    } else {
+      res.status(404).json({ error: 'Producto no encontrado' });
+    }
+  } catch (error) {
+    res.status(500).json({ error: 'Error al eliminar producto' });
   }
 }
 

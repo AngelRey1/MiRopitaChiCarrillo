@@ -8,7 +8,9 @@ import {
   updateDevolucion,
   getDetallesDevolucion,
   getDevolucionesByVenta,
-  getDevolucionesStats
+  getDevolucionesStats,
+  getVentasDisponiblesParaDevolucion,
+  getDetallesVentaParaDevolucion
 } from '../controllers/devolucionRepository';
 
 const router = Router();
@@ -31,6 +33,27 @@ router.get('/my-devoluciones', authenticateToken, requireDevolucionesPermission,
     res.json(devoluciones);
   } catch (err) {
     res.status(500).json({ error: 'Error al obtener devoluciones del usuario', details: err });
+  }
+});
+
+// Obtener ventas disponibles para devolución
+router.get('/ventas-disponibles', authenticateToken, requireDevolucionesPermission, async (req, res) => {
+  try {
+    const ventas = await getVentasDisponiblesParaDevolucion();
+    res.json(ventas);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener ventas disponibles', details: err });
+  }
+});
+
+// Obtener detalles de una venta específica para devolución
+router.get('/venta/:ventaId/detalles', authenticateToken, requireDevolucionesPermission, async (req, res) => {
+  try {
+    const ventaId = parseInt(req.params.ventaId, 10);
+    const detallesVenta = await getDetallesVentaParaDevolucion(ventaId);
+    res.json(detallesVenta);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener detalles de la venta', details: err });
   }
 });
 

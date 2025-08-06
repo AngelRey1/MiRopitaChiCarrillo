@@ -104,6 +104,101 @@ export async function getDevolucionById(id: number): Promise<Devolucion | null> 
   };
 }
 
+// Obtener ventas disponibles para devolución
+export async function getVentasDisponiblesParaDevolucion(): Promise<any[]> {
+  const [rows] = await pool.query(`
+    SELECT 
+      v.id,
+      v.fecha_venta,
+      v.total,
+      v.metodo_pago,
+      v.estado,
+      c.id_cliente,
+      c.nombre_cliente,
+      c.apellido_cliente,
+      c.telefono,
+      u.nombre as vendedor_nombre,
+      u.apellido as vendedor_apellido,
+      COUNT(dv.id) as total_productos,
+      SUM(dv.cantidad) as total_unidades
+    FROM ventas v
+    LEFT JOIN cliente c ON v.cliente_id = c.id_cliente
+    LEFT JOIN usuarios u ON v.usuario_id = u.id
+    LEFT JOIN detalles_ventas dv ON v.id = dv.venta_id
+    WHERE v.estado = 'completada'
+      AND v.id NOT IN (
+        SELECT DISTINCT venta_id 
+        FROM devoluciones 
+        WHERE venta_id IS NOT NULL AND estado IN ('aprobada', 'completada')
+      )
+    GROUP BY v.id, v.fecha_venta, v.total, v.metodo_pago, v.estado, 
+             c.id_cliente, c.nombre_cliente, c.apellido_cliente, c.telefono,
+             u.nombre, u.apellido
+    ORDER BY v.fecha_venta DESC
+  `);
+  
+  return rows as any[];
+}
+
+// Obtener detalles de una venta específica para devolución
+export async function getDetallesVentaParaDevolucion(ventaId: number): Promise<any> {
+  // Obtener información de la venta
+  const [ventaRows] = await pool.query(`
+    SELECT 
+      v.*,
+      c.nombre_cliente,
+      c.apellido_cliente,
+      c.telefono,
+      u.nombre as vendedor_nombre,
+      u.apellido as vendedor_apellido
+    FROM ventas v
+    LEFT JOIN cliente c ON v.cliente_id = c.id_cliente
+    LEFT JOIN usuarios u ON v.usuario_id = u.id
+    WHERE v.id = ? AND v.estado = 'completada'
+  `, [ventaId]);
+  
+  if ((ventaRows as any[]).length === 0) {
+    throw new Error('Venta no encontrada o no disponible para devolución');
+  }
+  
+  const venta = (ventaRows as any[])[0];
+  
+  // Obtener detalles de la venta
+  const [detallesRows] = await pool.query(`
+    SELECT 
+      dv.*,
+      p.nombre as producto_nombre,
+      p.modelo,
+      p.talla,
+      p.corte,
+      p.existencia as stock_actual
+    FROM detalles_ventas dv
+    JOIN producto p ON dv.producto_id = p.id_producto
+    WHERE dv.venta_id = ?
+  `, [ventaId]);
+  
+  return {
+    venta: {
+      id: venta.id,
+      fecha_venta: venta.fecha_venta,
+      total: venta.total,
+      metodo_pago: venta.metodo_pago,
+      estado: venta.estado,
+      cliente: {
+        id: venta.cliente_id,
+        nombre: venta.nombre_cliente,
+        apellido: venta.apellido_cliente,
+        telefono: venta.telefono
+      },
+      vendedor: {
+        nombre: venta.vendedor_nombre,
+        apellido: venta.vendedor_apellido
+      }
+    },
+    detalles: detallesRows
+  };
+}
+
 // Crear nueva devolución
 export async function createDevolucion(userId: number, devolucionData: CreateDevolucionRequest): Promise<Devolucion> {
   const connection = await pool.getConnection();
@@ -135,6 +230,12 @@ export async function createDevolucion(userId: number, devolucionData: CreateDev
       await connection.query(
         'INSERT INTO detalles_devoluciones (devolucion_id, producto_id, cantidad_devuelta, precio_unitario, subtotal, motivo_especifico) VALUES (?, ?, ?, ?, ?, ?)',
         [devolucionId, detalle.producto_id, detalle.cantidad_devuelta, detalle.precio_unitario, subtotal, detalle.motivo_especifico]
+      );
+      
+      // Actualizar stock del producto (devolver al inventario)
+      await connection.query(
+        'UPDATE producto SET existencia = existencia + ? WHERE id_producto = ?',
+        [detalle.cantidad_devuelta, detalle.producto_id]
       );
     }
     
@@ -171,8 +272,9 @@ export async function updateDevolucion(id: number, devolucionData: UpdateDevoluc
 // Obtener detalles de una devolución
 export async function getDetallesDevolucion(devolucionId: number): Promise<DetalleDevolucion[]> {
   const [rows] = await pool.query(`
-    SELECT dd.*
+    SELECT dd.*, p.nombre as producto_nombre, p.modelo, p.talla
     FROM detalles_devoluciones dd
+    JOIN producto p ON dd.producto_id = p.id_producto
     WHERE dd.devolucion_id = ?
   `, [devolucionId]);
   
@@ -185,7 +287,11 @@ export async function getDetallesDevolucion(devolucionId: number): Promise<Detal
     subtotal: row.subtotal,
     motivo_especifico: row.motivo_especifico,
     created_at: row.created_at,
-    producto: undefined // Por ahora no incluimos producto
+    producto: {
+      nombre: row.producto_nombre,
+      modelo: row.modelo,
+      talla: row.talla
+    }
   }));
 }
 

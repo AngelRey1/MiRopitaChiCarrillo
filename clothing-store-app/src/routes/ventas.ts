@@ -7,7 +7,8 @@ import {
   createVenta,
   updateVenta,
   getDetallesVenta,
-  getVentasStats
+  getVentasStats,
+  getProductosStockBajo
 } from '../controllers/ventaRepository';
 
 // Función auxiliar para obtener permisos según el rol (copiada del middleware)
@@ -147,6 +148,16 @@ router.get('/:id/detalles', authenticateToken, requireVentasPermission, async (r
     res.json(detalles);
   } catch (err) {
     res.status(500).json({ error: 'Error al obtener detalles de venta', details: err });
+  }
+});
+
+// Obtener productos con stock bajo
+router.get('/productos/stock-bajo', authenticateToken, requireVentasPermission, async (req, res) => {
+  try {
+    const productos = await getProductosStockBajo();
+    res.json(productos);
+  } catch (err) {
+    res.status(500).json({ error: 'Error al obtener productos con stock bajo', details: err });
   }
 });
 

@@ -111,6 +111,23 @@ export async function createVenta(userId: number, ventaData: CreateVentaRequest)
   try {
     await connection.beginTransaction();
     
+    // Validar stock antes de crear la venta
+    for (const detalle of ventaData.detalles) {
+      const [productoRows] = await connection.query(
+        'SELECT existencia, nombre FROM producto WHERE id_producto = ?',
+        [detalle.producto_id]
+      );
+      
+      if ((productoRows as any[]).length === 0) {
+        throw new Error(`Producto con ID ${detalle.producto_id} no encontrado`);
+      }
+      
+      const producto = (productoRows as any[])[0];
+      if (producto.existencia < detalle.cantidad) {
+        throw new Error(`Stock insuficiente para ${producto.nombre}. Disponible: ${producto.existencia}, Solicitado: ${detalle.cantidad}`);
+      }
+    }
+    
     // Calcular total
     const total = ventaData.detalles.reduce((sum, detalle) => {
       return sum + (detalle.cantidad * detalle.precio_unitario);
@@ -129,12 +146,20 @@ export async function createVenta(userId: number, ventaData: CreateVentaRequest)
     
     const ventaId = (ventaResult as any).insertId;
     
-    // Insertar detalles
+    // Insertar detalles y actualizar stock
     for (const detalle of ventaData.detalles) {
       const subtotal = detalle.cantidad * detalle.precio_unitario;
+      
+      // Insertar detalle de venta
       await connection.query(
         'INSERT INTO detalles_ventas (venta_id, producto_id, cantidad, precio_unitario, subtotal) VALUES (?, ?, ?, ?, ?)',
         [ventaId, detalle.producto_id, detalle.cantidad, detalle.precio_unitario, subtotal]
+      );
+      
+      // Actualizar stock del producto
+      await connection.query(
+        'UPDATE producto SET existencia = existencia - ? WHERE id_producto = ?',
+        [detalle.cantidad, detalle.producto_id]
       );
     }
     
@@ -212,4 +237,27 @@ export async function getVentasStats(): Promise<{
     ventas_hoy: row.ventas_hoy || 0,
     ingresos_hoy: row.ingresos_hoy || 0
   };
+}
+
+// Obtener productos con stock bajo
+export async function getProductosStockBajo(): Promise<any[]> {
+  const [rows] = await pool.query(`
+    SELECT 
+      id_producto,
+      nombre,
+      modelo,
+      talla,
+      existencia,
+      precio,
+      CASE 
+        WHEN existencia = 0 THEN 'SIN STOCK'
+        WHEN existencia <= 5 THEN 'STOCK BAJO'
+        ELSE 'STOCK NORMAL'
+      END as estado_stock
+    FROM producto 
+    WHERE existencia <= 5 AND activo = TRUE
+    ORDER BY existencia ASC
+  `);
+  
+  return rows as any[];
 } 
