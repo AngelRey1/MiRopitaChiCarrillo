@@ -41,6 +41,7 @@ import ventasRoutes from './ventas';          // Rutas de ventas
 import devolucionesRoutes from './devoluciones'; // Rutas de devoluciones
 import productosRoutes from './productos';    // Rutas de gestión de productos
 import proveedoresRoutes from './proveedores'; // Rutas de gestión de proveedores
+import storedProceduresRoutes from './storedProcedures'; // Rutas de procedimientos almacenados
 
 // =====================================================
 // IMPORTACIONES DE MIDDLEWARE
@@ -118,6 +119,10 @@ router.use('/productos', productosRoutes);
 // Montar rutas de proveedores bajo /api/proveedores
 // Incluye: CRUD completo de proveedores
 router.use('/proveedores', proveedoresRoutes);
+
+// Montar rutas de procedimientos almacenados bajo /api/sp
+// Incluye: ventas completas, gestión de stock, devoluciones
+router.use('/sp', storedProceduresRoutes);
 
 // =====================================================
 // EXPORTAR ROUTER CONFIGURADO

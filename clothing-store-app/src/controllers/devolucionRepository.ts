@@ -216,13 +216,13 @@ export async function createDevolucion(userId: number, devolucionData: CreateDev
       ? devolucionData.fecha_devolucion 
       : new Date(devolucionData.fecha_devolucion);
     
-    // Insertar devolución
+    // Usar procedimiento almacenado para procesar devolución
     const [devolucionResult] = await connection.query(
-      'INSERT INTO devoluciones (usuario_id, venta_id, cliente_id, fecha_devolucion, motivo, estado, total_devolucion, observaciones) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
-      [userId, devolucionData.venta_id, devolucionData.cliente_id, fechaDevolucion, devolucionData.motivo, 'pendiente', total, devolucionData.observaciones]
+      'CALL sp_procesar_devolucion(?, ?, ?, ?, ?, ?)',
+      [userId, devolucionData.venta_id, devolucionData.cliente_id, devolucionData.motivo, total, devolucionData.observaciones || '']
     );
     
-    const devolucionId = (devolucionResult as any).insertId;
+    const devolucionId = (devolucionResult as any)[0][0].devolucion_id;
     
     // Insertar detalles
     for (const detalle of devolucionData.detalles) {
@@ -232,10 +232,10 @@ export async function createDevolucion(userId: number, devolucionData: CreateDev
         [devolucionId, detalle.producto_id, detalle.cantidad_devuelta, detalle.precio_unitario, subtotal, detalle.motivo_especifico]
       );
       
-      // Actualizar stock del producto (devolver al inventario)
+      // Actualizar stock usando procedimiento almacenado
       await connection.query(
-        'UPDATE producto SET existencia = existencia + ? WHERE id_producto = ?',
-        [detalle.cantidad_devuelta, detalle.producto_id]
+        'CALL sp_actualizar_stock(?, ?, ?)',
+        [detalle.producto_id, detalle.cantidad_devuelta, 'devolucion']
       );
     }
     

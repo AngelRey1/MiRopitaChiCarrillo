@@ -12,6 +12,7 @@ Sistema completo de gestión para una tienda de ropa que incluye ventas, inventa
 - **Gestión de Usuarios**: Sistema de roles y permisos
 - **RRHH**: Control de turnos y asistencias de empleados
 - **Reportes y Estadísticas**: Dashboard con métricas del negocio
+- **Procedimientos Almacenados**: Optimización de operaciones críticas con stored procedures
 
 ## 🛠️ Tecnologías Utilizadas
 
@@ -44,6 +45,9 @@ npm install
 ```bash
 # Ejecutar el script de configuración en MySQL
 mysql -u root -p < setup_database.sql
+
+# Instalar procedimientos almacenados
+npm run setup-db
 ```
 
 ### 4. Configurar variables de entorno
@@ -70,6 +74,11 @@ DB_PORT=3306
 ### 6. Ejecutar el servidor
 ```bash
 npm start
+```
+
+### 7. Probar procedimientos almacenados (opcional)
+```bash
+npm run test-sp
 ```
 
 ## 🌐 Acceso al Sistema
@@ -204,6 +213,12 @@ npm start
 
 # Compilar TypeScript
 npm run build
+
+# Instalar procedimientos almacenados
+npm run setup-db
+
+# Probar procedimientos almacenados
+npm run test-sp
 ```
 
 ## 🔧 Configuración de Desarrollo
@@ -224,8 +239,27 @@ Copia `env.example` a `.env` y configura:
 
 - **Contraseñas**: Todos los usuarios de prueba usan `password123`
 - **Base de datos**: Ejecuta `setup_database.sql` antes de usar el sistema
+- **Procedimientos almacenados**: Ejecuta `npm run setup-db` para instalar los stored procedures
 - **Puerto**: El servidor se ejecuta en el puerto 4000 por defecto
 - **CORS**: Configurado para desarrollo local
+
+## 🗄️ Procedimientos Almacenados
+
+El sistema utiliza procedimientos almacenados para optimizar operaciones críticas:
+
+### Principales Procedimientos
+- **`sp_crear_venta_completa`**: Crear ventas con validación automática
+- **`sp_actualizar_stock`**: Gestión automática de inventario con alertas
+- **`sp_procesar_devolucion`**: Procesar devoluciones con actualización de estado
+
+### Ventajas
+- **Rendimiento**: Operaciones más rápidas al estar precompiladas
+- **Consistencia**: Lógica centralizada en la base de datos
+- **Seguridad**: Validaciones automáticas y transacciones seguras
+- **Alertas**: Notificaciones automáticas de stock bajo
+
+### Documentación Completa
+Ver `docs/STORED_PROCEDURES.md` para documentación detallada de todos los procedimientos almacenados.
 
 ## 🤝 Contribución
 

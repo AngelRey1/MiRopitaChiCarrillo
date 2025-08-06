@@ -47,6 +47,12 @@ export async function updateProduct(id_producto: number, producto: {
   precio: number;
   en_promocion?: boolean;
 }) {
+  // Obtener existencia actual para calcular la diferencia
+  const [currentRows] = await pool.query('SELECT existencia FROM producto WHERE id_producto = ?', [id_producto]);
+  const existenciaActual = (currentRows as any[])[0]?.existencia || 0;
+  const diferencia = producto.existencia - existenciaActual;
+  
+  // Actualizar producto
   await pool.query(
     `UPDATE producto SET nombre = ?, modelo = ?, talla = ?, corte = ?, existencia = ?, precio = ?, en_promocion = ?
      WHERE id_producto = ?`,
@@ -61,6 +67,15 @@ export async function updateProduct(id_producto: number, producto: {
       id_producto
     ]
   );
+  
+  // Si hay diferencia en existencia, usar procedimiento almacenado para actualizar stock
+  if (diferencia !== 0) {
+    const tipo = diferencia > 0 ? 'compra' : 'venta';
+    await pool.query(
+      'CALL sp_actualizar_stock(?, ?, ?)',
+      [id_producto, Math.abs(diferencia), tipo]
+    );
+  }
   
   // Obtener el producto actualizado
   const [rows] = await pool.query('SELECT * FROM producto WHERE id_producto = ?', [id_producto]);

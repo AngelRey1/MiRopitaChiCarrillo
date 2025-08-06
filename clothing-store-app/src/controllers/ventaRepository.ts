@@ -138,15 +138,15 @@ export async function createVenta(userId: number, ventaData: CreateVentaRequest)
       ? ventaData.fecha_venta 
       : new Date(ventaData.fecha_venta);
     
-    // Insertar venta
+    // Usar procedimiento almacenado para crear venta
     const [ventaResult] = await connection.query(
-      'INSERT INTO ventas (usuario_id, cliente_id, fecha_venta, total, metodo_pago, estado, observaciones) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [userId, ventaData.cliente_id, fechaVenta, total, ventaData.metodo_pago, 'completada', ventaData.observaciones]
+      'CALL sp_crear_venta_completa(?, ?, ?, ?)',
+      [userId, ventaData.cliente_id, ventaData.metodo_pago, ventaData.observaciones || '']
     );
     
-    const ventaId = (ventaResult as any).insertId;
+    const ventaId = (ventaResult as any)[0][0].venta_id;
     
-    // Insertar detalles y actualizar stock
+    // Insertar detalles y actualizar stock usando procedimientos almacenados
     for (const detalle of ventaData.detalles) {
       const subtotal = detalle.cantidad * detalle.precio_unitario;
       
@@ -156,10 +156,10 @@ export async function createVenta(userId: number, ventaData: CreateVentaRequest)
         [ventaId, detalle.producto_id, detalle.cantidad, detalle.precio_unitario, subtotal]
       );
       
-      // Actualizar stock del producto
+      // Actualizar stock usando procedimiento almacenado
       await connection.query(
-        'UPDATE producto SET existencia = existencia - ? WHERE id_producto = ?',
-        [detalle.cantidad, detalle.producto_id]
+        'CALL sp_actualizar_stock(?, ?, ?)',
+        [detalle.producto_id, detalle.cantidad, 'venta']
       );
     }
     
