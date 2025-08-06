@@ -422,10 +422,120 @@ export async function getTurnosByUser(req: Request, res: Response) {
 
 export async function createTurno(req: Request, res: Response) {
   try {
-    const turno = await createTurnoRepo(req.body);
-    res.status(201).json(turno);
+    console.log('=== DEBUG: createTurno ===');
+    console.log('Body recibido:', JSON.stringify(req.body, null, 2));
+    console.log('Usuario autenticado:', (req as any).user);
+    console.log('Headers:', req.headers);
+    console.log('Content-Type:', req.headers['content-type']);
+    console.log('Body keys:', Object.keys(req.body || {}));
+    console.log('Body length:', req.body ? Object.keys(req.body).length : 0);
+    
+    // Obtener el usuario autenticado
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      console.log('❌ Error: Usuario no autenticado');
+      return res.status(401).json({ error: 'Usuario no autenticado' });
+    }
+
+    // Extraer datos del body
+    const { 
+      fecha, 
+      hora_entrada, 
+      estado, 
+      observaciones,
+      // Nuevos campos del frontend
+      fecha_inicio,
+      fecha_fin,
+      tipo,
+      usuario_id
+    } = req.body;
+    
+    console.log('Datos extraídos:', {
+      fecha,
+      hora_entrada,
+      estado,
+      observaciones,
+      fecha_inicio,
+      fecha_fin,
+      tipo,
+      usuario_id,
+      userId
+    });
+
+    // Determinar qué formato se está usando y convertir
+    let turnoData;
+    
+    if (fecha_inicio && fecha_fin) {
+      // Formato del frontend: fecha_inicio, fecha_fin, tipo
+      console.log('📝 Usando formato del frontend');
+      
+      // Convertir fecha_inicio a fecha y hora_entrada
+      const fechaInicio = new Date(fecha_inicio);
+      const fechaFin = new Date(fecha_fin);
+      
+      // Extraer solo la fecha (sin tiempo) para el campo fecha
+      const fechaOnly = fechaInicio.toISOString().split('T')[0];
+      
+      // Extraer solo la hora para hora_entrada
+      const horaEntrada = fechaInicio.toTimeString().split(' ')[0];
+      
+      turnoData = {
+        usuario_id: usuario_id || userId,
+        fecha: new Date(fechaOnly),
+        hora_entrada: horaEntrada,
+        estado: estado || 'activo',
+        observaciones: observaciones || `Turno ${tipo || 'creado desde frontend'}`
+      };
+      
+      console.log('✅ Datos convertidos del frontend:', turnoData);
+      
+    } else if (fecha && hora_entrada) {
+      // Formato original: fecha, hora_entrada
+      console.log('📝 Usando formato original');
+      
+      turnoData = {
+        usuario_id: userId,
+        fecha: new Date(fecha),
+        hora_entrada,
+        estado: estado || 'activo',
+        observaciones: observaciones || ''
+      };
+      
+    } else {
+      console.log('❌ Error: Formato de datos no reconocido');
+      return res.status(400).json({ 
+        error: 'Formato de datos no válido. Se requiere fecha y hora_entrada, o fecha_inicio y fecha_fin',
+        received: req.body,
+        expectedFormats: {
+          format1: { fecha: 'YYYY-MM-DD', hora_entrada: 'HH:MM' },
+          format2: { fecha_inicio: 'YYYY-MM-DDTHH:MM', fecha_fin: 'YYYY-MM-DDTHH:MM', tipo: 'string' }
+        }
+      });
+    }
+
+    console.log('✅ Datos válidos, creando turno con:', turnoData);
+
+    const turno = await createTurnoRepo(turnoData);
+    console.log('✅ Turno creado exitosamente:', turno);
+    
+    // Agregar campos adicionales para el frontend
+    const turnoConDetalles = {
+      ...turno,
+      empleado: `Empleado ${turno.usuario_id}`,
+      fecha_inicio: req.body.fecha_inicio || `${turno.fecha}T${turno.hora_entrada}`,
+      fecha_fin: req.body.fecha_fin || `${turno.fecha}T${turno.hora_entrada.split(':')[0] + 8}:${turno.hora_entrada.split(':')[1]}`,
+      tipo: req.body.tipo || 'normal',
+      duracion: '8h 0m'
+    };
+    
+    res.status(201).json(turnoConDetalles);
   } catch (err) {
-    res.status(500).json({ error: 'Error al crear turno', details: err });
+    console.error('💥 Error detallado al crear turno:', err);
+    console.error('Stack trace:', (err as Error).stack);
+    res.status(500).json({ 
+      error: 'Error al crear turno', 
+      details: (err as Error).message || err 
+    });
   }
 }
 
@@ -479,10 +589,55 @@ export async function getAsistenciasByUser(req: Request, res: Response) {
 
 export async function createAsistencia(req: Request, res: Response) {
   try {
-    const asistencia = await createAsistenciaRepo(req.body);
+    console.log('=== DEBUG: createAsistencia ===');
+    console.log('Body recibido:', req.body);
+    console.log('Usuario autenticado:', (req as any).user);
+    
+    // Obtener el usuario autenticado
+    const userId = (req as any).user?.id;
+    if (!userId) {
+      return res.status(401).json({ error: 'Usuario no autenticado' });
+    }
+
+    // Validar datos de entrada
+    const { fecha, hora_entrada, estado, observaciones } = req.body;
+    
+    console.log('Datos extraídos:', {
+      fecha,
+      hora_entrada,
+      estado,
+      observaciones,
+      userId
+    });
+    
+    if (!fecha || !hora_entrada) {
+      return res.status(400).json({ 
+        error: 'Los campos fecha y hora_entrada son requeridos',
+        received: { fecha, hora_entrada, estado, observaciones }
+      });
+    }
+
+    // Crear el objeto asistencia con el usuario autenticado
+    const asistenciaData = {
+      usuario_id: userId,
+      fecha: new Date(fecha),
+      hora_entrada,
+      estado: estado || 'presente',
+      observaciones: observaciones || ''
+    };
+
+    console.log('✅ Datos válidos, creando asistencia con:', asistenciaData);
+
+    const asistencia = await createAsistenciaRepo(asistenciaData);
+    console.log('✅ Asistencia creada exitosamente:', asistencia);
     res.status(201).json(asistencia);
   } catch (err) {
-    res.status(500).json({ error: 'Error al crear asistencia', details: err });
+    console.error('💥 Error detallado al crear asistencia:', err);
+    console.error('Stack trace:', (err as Error).stack);
+    res.status(500).json({ 
+      error: 'Error al crear asistencia', 
+      details: (err as Error).message || err 
+    });
   }
 }
 

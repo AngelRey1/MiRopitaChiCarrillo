@@ -97,13 +97,18 @@ export interface AuthResponse {
 export interface Turno {
     id: number;           // Identificador único del turno
     usuario_id: number;   // ID del usuario (empleado)
-    fecha: Date;          // Fecha del turno
+    fecha: string | Date | null; // Fecha del turno (formato YYYY-MM-DD o Date)
     hora_entrada: string; // Hora de entrada (formato HH:MM)
     hora_salida?: string; // Hora de salida (opcional, formato HH:MM)
     estado: 'activo' | 'completado' | 'ausente'; // Estado del turno
     observaciones?: string; // Observaciones adicionales
-    created_at: Date;     // Fecha de creación del registro
-    updated_at: Date;     // Fecha de última actualización
+    created_at: string | Date | null; // Fecha de creación del registro
+    // Campos adicionales para el frontend
+    empleado?: string;    // Nombre completo del empleado
+    fecha_inicio?: string; // Fecha y hora de inicio (formato YYYY-MM-DDTHH:MM)
+    fecha_fin?: string;   // Fecha y hora de fin (formato YYYY-MM-DDTHH:MM)
+    tipo?: string;        // Tipo de turno (mañana, tarde, noche, etc.)
+    duracion?: string;    // Duración del turno (ej: "8h 0m")
     usuario?: {           // Información del usuario (opcional)
         nombre: string;   // Nombre del empleado
         apellido: string; // Apellido del empleado
@@ -114,13 +119,12 @@ export interface Turno {
 export interface Asistencia {
     id: number;           // Identificador único de la asistencia
     usuario_id: number;   // ID del usuario (empleado)
-    fecha: Date;          // Fecha de la asistencia
-    hora_entrada?: string; // Hora de entrada real (opcional)
+    fecha: string | Date | null; // Fecha de la asistencia (formato YYYY-MM-DD o Date)
+    hora_entrada: string; // Hora de entrada real
     hora_salida?: string; // Hora de salida real (opcional)
     estado: 'presente' | 'ausente' | 'tardanza' | 'salida_temprana'; // Estado de asistencia
     observaciones?: string; // Observaciones adicionales
-    created_at: Date;     // Fecha de creación del registro
-    updated_at: Date;     // Fecha de última actualización
+    created_at: string | Date | null; // Fecha de creación del registro
     usuario?: {           // Información del usuario (opcional)
         nombre: string;   // Nombre del empleado
         apellido: string; // Apellido del empleado

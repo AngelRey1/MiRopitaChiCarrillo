@@ -173,4 +173,10 @@ export function requireDevolucionesPermission(req: Request, res: Response, next:
 // Permite acceso a usuarios con permiso 'usuarios'
 export function requireRRHHPermission(req: Request, res: Response, next: NextFunction) {
   return requirePermission('usuarios')(req, res, next);
+}
+
+// Middleware para verificar permisos de gestión de turnos
+// Permite acceso a usuarios con permiso 'turnos'
+export function requireTurnosPermission(req: Request, res: Response, next: NextFunction) {
+  return requirePermission('turnos')(req, res, next);
 } 
